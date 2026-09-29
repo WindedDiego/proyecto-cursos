@@ -1,0 +1,24 @@
+{
+  "name": "proyectocursos",
+  "version": "1.0.0",
+  "description": "Plataforma de cursos con exámenes, tareas y foros",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WindedDiego/proyecto-cursos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/WindedDiego/proyecto-cursos/issues"
+  },
+  "homepage": "https://github.com/WindedDiego/proyecto-cursos#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
