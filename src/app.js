@@ -18,9 +18,13 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // 👉 Importar rutas de autenticación
 const authRoutes = require('./routes/auth');
-
-// 👉 Conectar rutas
 app.use('/auth', authRoutes);
+
+// ⭐👉 Importar rutas de cursos
+const cursosRoutes = require('./routes/cursos');
+
+// ⭐👉 Conectar rutas de cursos
+app.use('/cursos', cursosRoutes);
 
 const PORT = process.env.PORT || 3000;
 
