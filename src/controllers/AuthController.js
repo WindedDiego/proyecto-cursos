@@ -7,7 +7,15 @@ module.exports = {
   // Registro de usuario
   register: async (req, res) => {
     try {
-      const { nombre, email, contraseña, rol } = req.body;
+      // Recogemos la contraseña tal como viene del formulario (con o sin ñ)
+      const nombre = req.body.nombre;
+      const email = req.body.email;
+      const passwordPlain = req.body.contraseña || req.body.contrasena;
+      const rol = req.body.rol;
+
+      if (!passwordPlain) {
+        return res.status(400).json({ mensaje: 'La contraseña es obligatoria' });
+      }
 
       // Verificar si el usuario ya existe
       const usuarioExistente = await Usuario.findOne({ where: { email } });
@@ -16,13 +24,13 @@ module.exports = {
       }
 
       // Encriptar contraseña
-      const hash = await bcrypt.hash(contraseña, 10);
+      const hash = await bcrypt.hash(passwordPlain, 10);
 
-      // Crear usuario
+      // Crear usuario (guardando en la columna 'contrasena' de la BD)
       const nuevoUsuario = await Usuario.create({
         nombre,
         email,
-        contraseña: hash,
+        contrasena: hash,
         rol
       });
 
@@ -45,7 +53,8 @@ module.exports = {
   // Login de usuario
   login: async (req, res) => {
     try {
-      const { email, contraseña } = req.body;
+      const email = req.body.email;
+      const passwordPlain = req.body.contraseña || req.body.contrasena;
 
       // Buscar usuario
       const usuario = await Usuario.findOne({ where: { email } });
@@ -54,7 +63,7 @@ module.exports = {
       }
 
       // Comparar contraseña
-      const coincide = await bcrypt.compare(contraseña, usuario.contraseña);
+      const coincide = await bcrypt.compare(passwordPlain, usuario.contrasena);
       if (!coincide) {
         return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
       }

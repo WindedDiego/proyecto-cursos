@@ -1,0 +1,20 @@
+<h1>Añadir contenido a: <%= curso.titulo %></h1>
+
+<form action="/cursos/<%= curso.id %>/contenidos/crear" method="POST">
+  <label>Tipo de material:</label>
+  <select name="tipo" required>
+    <option value="video">Vídeo</option>
+    <option value="pdf">PDF</option>
+    <option value="texto">Texto / Enlace</option>
+  </select>
+  <br><br>
+
+  <label>URL del archivo:</label>
+  <input type="text" name="url_archivo" placeholder="https://ejemplo.com/archivo.pdf">
+  <br><br>
+
+  <button type="submit">Guardar Contenido</button>
+</form>
+
+<br>
+<a href="/cursos/<%= curso.id %>/contenidos">Cancelar y Volver</a>

@@ -7,35 +7,22 @@ const Usuario = sequelize.define('Usuario', {
     autoIncrement: true,
     primaryKey: true
   },
-
   nombre: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-
   email: {
-    type: DataTypes.STRING(150),
+    type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true,
-    validate: {
-      isEmail: true
-    }
+    unique: true
   },
-
-  contraseña: {
-    type: DataTypes.STRING,
+  contrasena: { // IMPORTANTE: Sin la "ñ" para que coincida con el SQL
+    type: DataTypes.STRING(255),
     allowNull: false
   },
-
   rol: {
-    type: DataTypes.ENUM('alumno', 'profesor', 'observador'),
-    allowNull: false,
-    defaultValue: 'alumno'
-  },
-
-  fecha_registro: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+    type: DataTypes.ENUM('profesor', 'alumno', 'observador'),
+    allowNull: false
   }
 }, {
   tableName: 'Usuarios',

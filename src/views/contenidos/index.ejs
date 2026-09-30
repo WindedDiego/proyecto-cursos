@@ -1,0 +1,20 @@
+<h1>Contenidos del curso: <%= curso.titulo %></h1>
+
+<ul>
+  <% if (contenidos.length === 0) { %>
+    <p>Aún no hay contenidos registrados en este curso.</p>
+  <% } else { %>
+    <% contenidos.forEach(contenido => { %>
+      <li>
+        <strong>Tipo:</strong> <%= contenido.tipo %> 
+        <% if (contenido.url_archivo) { %>
+          - <a href="<%= contenido.url_archivo %>" target="_blank">Ver archivo / enlace</a>
+        <% } %>
+      </li>
+    <% }) %>
+  <% } %>
+</ul>
+
+<a href="/cursos/<%= curso.id %>/contenidos/crear">Añadir nuevo contenido</a>
+<br><br>
+<a href="/cursos/<%= curso.id %>">Volver al detalle del curso</a>
