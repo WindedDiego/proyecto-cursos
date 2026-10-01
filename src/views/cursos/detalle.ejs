@@ -14,14 +14,44 @@
         <a href="/cursos/<%= curso.id %>/foros" class="btn btn-secondary me-2">Foros del curso</a>
         <a href="/cursos/<%= curso.id %>/tareas" class="btn btn-success me-2">Tareas del curso</a>
         <a href="/cursos/<%= curso.id %>/examenes" class="btn btn-warning me-2">Exámenes del curso</a>
-        <a href="/cursos/<%= curso.id %>/editar" class="btn btn-outline-dark me-2">Editar curso</a>
+        
+        <!-- Botón Editar exclusivo para profesor -->
+        <div id="seccion-editar-curso" class="d-inline-block d-none me-2">
+            <a href="/cursos/<%= curso.id %>/editar" class="btn btn-outline-dark">Editar curso</a>
+        </div>
     </div>
 
-    <form action="/cursos/<%= curso.id %>/eliminar" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este curso?');">
-        <button type="submit" class="btn btn-danger btn-sm">Eliminar curso</button>
-    </form>
+    <!-- Formulario Eliminar exclusivo para profesor -->
+    <div id="seccion-eliminar-curso" class="d-none">
+        <form action="/cursos/<%= curso.id %>/eliminar" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este curso?');">
+            <button type="submit" class="btn btn-danger btn-sm">Eliminar curso</button>
+        </form>
+    </div>
 
     <br>
     <a href="/cursos" class="btn btn-link px-0">← Volver al listado general de cursos</a>
+
+    <script>
+        function obtenerRolDeToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return null;
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload).rol;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const rol = obtenerRolDeToken();
+        if (rol === 'profesor') {
+            document.getElementById('seccion-editar-curso').classList.remove('d-none');
+            document.getElementById('seccion-eliminar-curso').classList.remove('d-none');
+        }
+    </script>
 </body>
 </html>

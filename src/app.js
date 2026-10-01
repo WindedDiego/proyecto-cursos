@@ -72,7 +72,7 @@ app.get('/', (req, res) => {
 sequelize.authenticate()
   .then(() => {
     console.log('Conexión a la base de datos establecida ✔');
-    return sequelize.sync({ alter: true });
+    return sequelize.sync(); // 👈 Quitamos el { alter: true }
   })
   .then(() => console.log('Tablas sincronizadas ✔'))
   .catch(err => console.error('Error al conectar a la base de datos ❌', err));

@@ -1,16 +1,84 @@
-<h1>Exámenes del curso: <%= curso.titulo %></h1>
-<!-- ❌ MAL (Esto causa el error Cannot GET /examenes/crear): -->
-<!-- <a href="/examenes/crear">Crear examen</a> -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Exámenes del curso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+    <h1 class="mb-3">Exámenes del curso: <%= curso.titulo %></h1>
+    
+    <!-- Botón exclusivo para profesor -->
+    <div id="seccion-profesor-crear" class="mb-4 d-none">
+        <a href="/cursos/<%= curso.id %>/examenes/crear" class="btn btn-primary">Crear nuevo examen</a>
+    </div>
 
-<!-- ✅ BIEN (Usa el ID del curso actual): -->
-<a href="/cursos/<%= curso.id %>/examenes/crear" class="btn btn-primary">Crear examen</a>
+    <div class="list-group mb-4">
+        <% if (examenes.length === 0) { %>
+            <div class="alert alert-info">No hay exámenes disponibles en este momento.</div>
+        <% } else { %>
+            <% examenes.forEach(e => { %>
+                <div class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-3 p-3">
+                    <span class="fw-bold fs-5"><%= e.tipo || 'Examen ' + e.id %></span>
+                    
+                    <div class="d-flex flex-wrap gap-2">
+                        <!-- Botón para alumnos -->
+                        <div id="btn-alumno-hacer" class="d-none">
+                            <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>/resolver" class="btn btn-success btn-sm">
+                                ✏️ Hacer el examen
+                            </a>
+                        </div>
 
-<ul>
-  <% examenes.forEach(e => { %>
-    <li>
-      <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>"><%= e.tipo || 'Examen ' + e.id %></a>
-    </li>
-  <% }) %>
-</ul>
+                        <!-- Botón para observador (auditoría / ver corrección) -->
+                        <div id="btn-observador-ver" class="d-none">
+                            <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>" class="btn btn-info btn-sm">
+                                🔍 Auditar / Ver preguntas
+                            </a>
+                        </div>
 
-<a href="/cursos/<%= curso.id %>" class="btn btn-secondary mt-3">Volver al curso</a>
+                        <!-- Botones exclusivos de Profesor -->
+                        <div class="botones-profesor d-none d-inline-flex gap-2">
+                            <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>" class="btn btn-warning btn-sm">
+                                ⚙️ Modificar / Añadir preguntas
+                            </a>
+                            <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>/resolver" class="btn btn-dark btn-sm">
+                                📊 Corregir el examen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+
+    <a href="/cursos/<%= curso.id %>" class="btn btn-secondary">← Volver al curso</a>
+
+    <script>
+        function obtenerRolDeToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return null;
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload).rol;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        const rol = obtenerRolDeToken();
+        if (rol === 'profesor') {
+            document.getElementById('seccion-profesor-crear').classList.remove('d-none');
+            document.querySelectorAll('.botones-profesor').forEach(el => el.classList.remove('d-none'));
+        } else if (rol === 'observador') {
+            document.querySelectorAll('#btn-observador-ver').forEach(el => el.classList.remove('d-none'));
+        } else {
+            // Por defecto alumno
+            document.querySelectorAll('#btn-alumno-hacer').forEach(el => el.classList.remove('d-none'));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Realizar Examen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4" style="max-width: 700px;">
+    <h1>Examen: <%= examen.tipo %></h1>
+    <a href="/cursos/<%= cursoId %>/examenes" class="btn btn-secondary mb-3">← Volver</a>
+
+    <% const listaPreguntas = examen.Preguntas || examen.Pregunta || []; %>
+
+    <% if (listaPreguntas.length === 0) { %>
+        <div class="alert alert-warning">Este examen no tiene preguntas disponibles todavía.</div>
+    <% } else { %>
+        <form action="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/resolver" method="POST">
+            <% listaPreguntas.forEach((pregunta, index) => { %>
+                <div class="card mb-3 p-3 shadow-sm">
+                    <h5>Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
+                    <div class="mt-2">
+                        <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
+                        <% listaRespuestas.forEach(resp => { %>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="pregunta_<%= pregunta.id %>" value="<%= resp.id %>" id="resp_<%= resp.id %>" required>
+                                <label class="form-check-label" for="resp_<%= resp.id %>">
+                                    <%= resp.texto %>
+                                </label>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+            <% }) %>
+            <button type="submit" class="btn btn-success w-100 py-2 mt-3">Enviar Examen y Corregir</button>
+        </form>
+    <% } %>
+</body>
+</html>

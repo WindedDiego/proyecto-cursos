@@ -12,15 +12,18 @@
 
     <h1>Listado de cursos</h1>
 
-    <ul>
+    <ul class="list-group mb-3">
       <% cursos.forEach(curso => { %>
-        <li>
-          <a href="/cursos/<%= curso.id %>"><%= curso.titulo %></a>
+        <li class="list-group-item">
+          <a href="/cursos/<%= curso.id %>" class="text-decoration-none"><%= curso.titulo %></a>
         </li>
       <% }) %>
     </ul>
 
-    <a href="/cursos/crear" class="btn btn-primary">Crear nuevo curso</a>
+    <!-- Botón de crear curso exclusivo para profesor -->
+    <div id="seccion-crear-curso" class="d-none">
+        <a href="/cursos/crear" class="btn btn-primary">Crear nuevo curso</a>
+    </div>
 
     <script>
         // Función robusta para leer el rol desde el token JWT en localStorage
@@ -40,12 +43,13 @@
             }
         }
 
-        // Al cargar la página, comprobamos el rol y pintamos el botón correspondiente
+        // Al cargar la página, comprobamos el rol y pintamos los elementos correspondientes
         const rolUsuario = obtenerRolDeToken();
         const contenedor = document.getElementById('panel-container');
 
         if (rolUsuario === 'profesor') {
             contenedor.innerHTML = '<a href="/paneles/profesor" class="btn btn-warning">Ir a mi Panel de Profesor 👨‍🏫</a>';
+            document.getElementById('seccion-crear-curso').classList.remove('d-none');
         } else if (rolUsuario === 'observador') {
             contenedor.innerHTML = '<a href="/paneles/observador" class="btn btn-info">Ir a Informes / Observador 🕵️</a>';
         } else if (rolUsuario === 'alumno') {
