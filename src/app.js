@@ -48,7 +48,7 @@ app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.send('Curso online funcionando 🚀');
+  res.redirect('/auth/login');
 });
 
 sequelize.authenticate()
