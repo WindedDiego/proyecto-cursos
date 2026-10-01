@@ -32,6 +32,7 @@ const examenesRoutes = require('./routes/examenes');
 
 // ⭐👉 Importar rutas de tareas
 const tareasRoutes = require('./routes/tareas');
+const forosRoutes = require('./routes/foros');
 
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
@@ -41,6 +42,7 @@ app.use('/examenes', examenesRoutes);
 
 // ⭐👉 Conectar rutas de tareas
 app.use('/cursos/:id_curso/tareas', tareasRoutes);
+app.use('/cursos/:id_curso/foros', forosRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
@@ -48,7 +50,7 @@ app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-  res.redirect('/auth/login');
+  res.send('Curso online funcionando 🚀');
 });
 
 sequelize.authenticate()
