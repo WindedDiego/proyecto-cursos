@@ -7,6 +7,7 @@ const Curso = require('./models/Curso');
 const Usuario = require('./models/Usuario');
 const Foro = require('./models/Foro');
 const MensajeForo = require('./models/MensajeForo');
+const RegistroActividad = require('./models/RegistroActividad');
 
 Examen.hasMany(Pregunta, { foreignKey: 'examen_id', sourceKey: 'id' });
 Pregunta.belongsTo(Examen, { foreignKey: 'examen_id', targetKey: 'id' });
@@ -22,3 +23,6 @@ MensajeForo.belongsTo(Foro, { foreignKey: 'foro_id', as: 'foro' });
 
 Usuario.hasMany(MensajeForo, { foreignKey: 'usuario_id', as: 'mensajesForo' });
 MensajeForo.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'autor' });
+
+Usuario.hasMany(RegistroActividad, { foreignKey: 'usuario_id', as: 'actividades' });
+RegistroActividad.belongsTo(Usuario, { foreignKey: 'usuario_id', as: 'usuario' });

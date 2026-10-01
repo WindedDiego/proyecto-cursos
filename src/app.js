@@ -6,6 +6,9 @@ const app = express();
 const path = require('path');
 require('./associations');
 
+// 👉 Importar middleware de registro de actividad
+const activityMiddleware = require('./middlewares/activityMiddleware');
+
 // 👉 Activar EJS y carpeta de vistas
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -16,6 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, '../public')));
+
+// ⭐👉 Middleware global: Registra la hora de entrada y salida de CADA RECURSO automáticamente
+app.use(activityMiddleware);
 
 // 👉 Importar rutas de autenticación
 const authRoutes = require('./routes/auth');
