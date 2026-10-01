@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tareas del curso - <%= curso.titulo %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+    <h1>Tareas para el curso: <%= curso.titulo %></h1>
+    <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primary my-3">Subir nueva tarea</a>
+    <a href="/cursos/<%= curso.id %>" class="btn btn-secondary my-3">Volver al curso</a>
+
+    <ul class="list-group">
+        <% if (tareas.length === 0) { %>
+            <p class="text-muted">No hay tareas enviadas todavía.</p>
+        <% } else { %>
+            <% tareas.forEach(tarea => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Archivo: <a href="<%= tarea.url_archivo %>" target="_blank"><%= tarea.url_archivo %></a> (Enviado el: <%= tarea.fecha_envio %>)</span>
+                </li>
+            <% }) %>
+        <% } %>
+    </ul>
+</body>
+</html>

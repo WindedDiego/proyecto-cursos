@@ -30,11 +30,17 @@ const contenidosRoutes = require('./routes/contenidos');
 // ⭐👉 Importar rutas de exámenes
 const examenesRoutes = require('./routes/examenes');
 
+// ⭐👉 Importar rutas de tareas
+const tareasRoutes = require('./routes/tareas');
+
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
 
 // ⭐👉 Conectar rutas de exámenes
 app.use('/examenes', examenesRoutes);
+
+// ⭐👉 Conectar rutas de tareas
+app.use('/cursos/:id_curso/tareas', tareasRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
