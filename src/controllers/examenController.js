@@ -1,6 +1,7 @@
 const Examen = require('../models/Examen');
 const Pregunta = require('../models/Pregunta');
 const Respuesta = require('../models/Respuesta');
+const Curso = require('../models/Curso');
 
 module.exports = {
 
@@ -9,15 +10,31 @@ module.exports = {
         res.render('examenes/index', { examenes });
     },
 
-    crearForm: (req, res) => {
-        res.render('examenes/crear');
+    crearForm: async (req, res) => {
+        const cursos = await Curso.findAll({ attributes: ['id', 'titulo'], order: [['titulo', 'ASC']] });
+        res.render('examenes/crear', { cursos });
     },
 
     crear: async (req, res) => {
+        const { curso_id, tipo } = req.body;
+
+        const cursoId = Number(curso_id);
+        const tipoExamen = String(tipo || '').trim();
+
+        if (!Number.isInteger(cursoId) || cursoId <= 0 || !tipoExamen) {
+            return res.status(400).send('Faltan datos: curso_id y tipo son obligatorios');
+        }
+
+        const curso = await Curso.findByPk(cursoId);
+        if (!curso) {
+            return res.status(400).send('El curso seleccionado no existe');
+        }
+
         await Examen.create({
-            curso_id: req.body.curso_id || req.body.cursoId,
-            tipo: req.body.tipo || req.body.titulo
+            curso_id: cursoId,
+            tipo: tipoExamen
         });
+
         res.redirect('/examenes');
     },
 
