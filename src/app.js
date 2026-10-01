@@ -4,6 +4,7 @@ const cors = require('cors');
 const express = require('express');
 const app = express();
 const path = require('path');
+require('./associations');
 
 // 👉 Activar EJS y carpeta de vistas
 app.set('view engine', 'ejs');
@@ -26,8 +27,14 @@ const cursosRoutes = require('./routes/cursos');
 // ⭐👉 Importar rutas de contenidos
 const contenidosRoutes = require('./routes/contenidos');
 
+// ⭐👉 Importar rutas de exámenes
+const examenesRoutes = require('./routes/examenes');
+
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
+
+// ⭐👉 Conectar rutas de exámenes
+app.use('/examenes', examenesRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
@@ -39,7 +46,11 @@ app.get('/', (req, res) => {
 });
 
 sequelize.authenticate()
-  .then(() => console.log('Conexión a la base de datos establecida ✔'))
+  .then(() => {
+    console.log('Conexión a la base de datos establecida ✔');
+    return sequelize.sync({ alter: true });
+  })
+  .then(() => console.log('Tablas sincronizadas ✔'))
   .catch(err => console.error('Error al conectar a la base de datos ❌', err));
 
 app.listen(PORT, () => {

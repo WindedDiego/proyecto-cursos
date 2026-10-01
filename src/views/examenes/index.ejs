@@ -1,0 +1,10 @@
+<h1>Exámenes</h1>
+<a href="/examenes/crear">Crear examen</a>
+
+<ul>
+  <% examenes.forEach(e => { %>
+    <li>
+      <a href="/examenes/<%= e.id %>"><%= e.tipo || 'Examen ' + e.id %></a>
+    </li>
+  <% }) %>
+</ul>
