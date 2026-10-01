@@ -1,11 +1,56 @@
-<h1>Listado de cursos</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de cursos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
 
-<ul>
-  <% cursos.forEach(curso => { %>
-    <li>
-      <a href="/cursos/<%= curso.id %>"><%= curso.titulo %></a>
-    </li>
-  <% }) %>
-</ul>
+    <!-- Contenedor dinámico donde aparecerá el botón del panel según el rol -->
+    <div id="panel-container" class="mb-3"></div>
 
-<a href="/cursos/crear">Crear nuevo curso</a>
+    <h1>Listado de cursos</h1>
+
+    <ul>
+      <% cursos.forEach(curso => { %>
+        <li>
+          <a href="/cursos/<%= curso.id %>"><%= curso.titulo %></a>
+        </li>
+      <% }) %>
+    </ul>
+
+    <a href="/cursos/crear" class="btn btn-primary">Crear nuevo curso</a>
+
+    <script>
+        // Función robusta para leer el rol desde el token JWT en localStorage
+        function obtenerRolDeToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return null;
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload).rol;
+            } catch (e) {
+                console.error("Error al leer el token:", e);
+                return null;
+            }
+        }
+
+        // Al cargar la página, comprobamos el rol y pintamos el botón correspondiente
+        const rolUsuario = obtenerRolDeToken();
+        const contenedor = document.getElementById('panel-container');
+
+        if (rolUsuario === 'profesor') {
+            contenedor.innerHTML = '<a href="/paneles/profesor" class="btn btn-warning">Ir a mi Panel de Profesor 👨‍🏫</a>';
+        } else if (rolUsuario === 'observador') {
+            contenedor.innerHTML = '<a href="/paneles/observador" class="btn btn-info">Ir a Informes / Observador 🕵️</a>';
+        } else if (rolUsuario === 'alumno') {
+            contenedor.innerHTML = '<a href="/paneles/alumno" class="btn btn-success">Ver mi Panel de Alumno 👨‍🎓</a>';
+        }
+    </script>
+</body>
+</html>

@@ -11,33 +11,24 @@
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h3 class="mb-4">Crear examen</h3>
+            <h3 class="mb-1">Crear examen</h3>
+            <p class="text-muted mb-4">Curso: <strong><%= curso.titulo %></strong></p>
 
-            <form action="/examenes/crear" method="POST">
+            <!-- El action ahora apunta directamente a la ruta del curso actual -->
+            <form action="/cursos/<%= curso.id %>/examenes/crear" method="POST">
+              
               <div class="mb-3">
-                <label for="curso_id" class="form-label">Curso</label>
-                <select id="curso_id" name="curso_id" class="form-select" required <%= cursos.length ? '' : 'disabled' %>>
-                  <option value="" selected disabled>Selecciona un curso</option>
-                  <% cursos.forEach(curso => { %>
-                    <option value="<%= curso.id %>"><%= curso.titulo %></option>
-                  <% }) %>
-                </select>
-                <% if (!cursos.length) { %>
-                  <div class="form-text">No hay cursos disponibles para crear un examen.</div>
-                <% } %>
+                <label class="form-label">Tipo de examen</label>
+                <input type="text" name="tipo" class="form-control" placeholder="Ej: Test Parcial, Examen Final, Práctica" required>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Tipo</label>
-                <input type="text" name="tipo" class="form-control" placeholder="Ej: test, práctica, final" required>
-              </div>
-
-              <button type="submit" class="btn btn-primary w-100" <%= cursos.length ? '' : 'disabled' %>>Guardar examen</button>
+              <button type="submit" class="btn btn-primary w-100">Guardar examen</button>
             </form>
 
-            <div class="mt-3">
-              <a href="/examenes/" class="btn btn-link">Volver a exámenes</a>
+            <div class="mt-3 text-center">
+              <a href="/cursos/<%= curso.id %>/examenes" class="btn btn-link">← Volver a exámenes del curso</a>
             </div>
+
           </div>
         </div>
       </div>

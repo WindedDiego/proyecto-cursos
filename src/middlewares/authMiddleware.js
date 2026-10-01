@@ -2,27 +2,32 @@ const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
   try {
-    // Leer token del header Authorization
-    const authHeader = req.headers.authorization;
+    let token = null;
 
-    if (!authHeader) {
-      return res.status(401).json({ mensaje: 'Token no proporcionado' });
+    // 1. Intentar leer del header Authorization
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
     }
 
-    // Formato esperado: "Bearer token"
-    const token = authHeader.split(' ')[1];
+    // 2. Si no está en el header, leerlo de las cookies del navegador
+    if (!token && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';');
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'token') {
+          token = value;
+        }
+      }
+    }
 
     if (!token) {
-      return res.status(401).json({ mensaje: 'Token inválido' });
+      return res.status(401).json({ mensaje: 'Token no proporcionado' });
     }
 
     // Verificar token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Guardar datos del usuario en la request
     req.usuario = decoded;
-
-    // Continuar
     next();
 
   } catch (error) {

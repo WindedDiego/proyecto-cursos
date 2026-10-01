@@ -1,17 +1,25 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router({ mergeParams: true }); // Mantiene el :id_curso
 const ExamenController = require('../controllers/examenController');
+const authMiddleware = require('../middlewares/authMiddleware');
+const roleMiddleware = require('../middlewares/roleMiddleware');
 
-router.get('/', ExamenController.listar);
-router.get('/crear', ExamenController.crearForm);
-router.post('/crear', ExamenController.crear);
+// Listar exámenes del curso (todos pueden verlos)
+router.get('/', authMiddleware, ExamenController.listar);
 
-router.get('/:id', ExamenController.detalle);
+// Crear exámenes (SOLO PROFESOR)
+router.get('/crear', authMiddleware, roleMiddleware('profesor'), ExamenController.crearForm);
+router.post('/crear', authMiddleware, roleMiddleware('profesor'), ExamenController.crear);
 
-router.get('/:id/preguntas', ExamenController.agregarPreguntasForm);
-router.post('/:id/preguntas', ExamenController.agregarPreguntas);
+// Ver detalle del examen
+router.get('/:id', authMiddleware, ExamenController.detalle);
 
-router.get('/:id/resolver', ExamenController.resolverForm);
-router.post('/:id/resolver', ExamenController.resolver);
+// Agregar preguntas (SOLO PROFESOR)
+router.get('/:id/preguntas', authMiddleware, roleMiddleware('profesor'), ExamenController.agregarPreguntasForm);
+router.post('/:id/preguntas', authMiddleware, roleMiddleware('profesor'), ExamenController.agregarPreguntas);
+
+// Resolver examen
+router.get('/:id/resolver', authMiddleware, ExamenController.resolverForm);
+router.post('/:id/resolver', authMiddleware, ExamenController.resolver);
 
 module.exports = router;

@@ -1,10 +1,16 @@
-<h1>Exámenes</h1>
-<a href="/examenes/crear">Crear examen</a>
+<h1>Exámenes del curso: <%= curso.titulo %></h1>
+<!-- ❌ MAL (Esto causa el error Cannot GET /examenes/crear): -->
+<!-- <a href="/examenes/crear">Crear examen</a> -->
+
+<!-- ✅ BIEN (Usa el ID del curso actual): -->
+<a href="/cursos/<%= curso.id %>/examenes/crear" class="btn btn-primary">Crear examen</a>
 
 <ul>
   <% examenes.forEach(e => { %>
     <li>
-      <a href="/examenes/<%= e.id %>"><%= e.tipo || 'Examen ' + e.id %></a>
+      <a href="/cursos/<%= curso.id %>/examenes/<%= e.id %>"><%= e.tipo || 'Examen ' + e.id %></a>
     </li>
   <% }) %>
 </ul>
+
+<a href="/cursos/<%= curso.id %>" class="btn btn-secondary mt-3">Volver al curso</a>

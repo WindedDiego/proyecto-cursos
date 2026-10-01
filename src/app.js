@@ -38,17 +38,27 @@ const examenesRoutes = require('./routes/examenes');
 
 // ⭐👉 Importar rutas de tareas
 const tareasRoutes = require('./routes/tareas');
+
+// ⭐👉 Importar rutas de foros
 const forosRoutes = require('./routes/foros');
+
+// ⭐👉 Importar rutas de paneles
+const panelesRoutes = require('./routes/paneles');
 
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
 
 // ⭐👉 Conectar rutas de exámenes
-app.use('/examenes', examenesRoutes);
+app.use('/cursos/:id_curso/examenes', examenesRoutes);
 
 // ⭐👉 Conectar rutas de tareas
 app.use('/cursos/:id_curso/tareas', tareasRoutes);
+
+// ⭐👉 Conectar rutas de foros
 app.use('/cursos/:id_curso/foros', forosRoutes);
+
+// ⭐👉 Conectar rutas de paneles
+app.use('/paneles', panelesRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
