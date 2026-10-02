@@ -73,14 +73,17 @@ app.get('/', (req, res) => {
   res.send('Curso online funcionando 🚀');
 });
 
-sequelize.authenticate()
-  .then(() => {
+async function start() {
+  try {
+    await sequelize.authenticate();
     console.log('Conexión a la base de datos establecida ✔');
-    return sequelize.sync(); // 👈 Quitamos el { alter: true }
-  })
-  .then(() => console.log('Tablas sincronizadas ✔'))
-  .catch(err => console.error('Error al conectar a la base de datos ❌', err));
+    app.listen(PORT, () => {
+      console.log(`Servidor escuchando en puerto ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error al conectar a la base de datos ❌', error);
+    process.exitCode = 1;
+  }
+}
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+start();
