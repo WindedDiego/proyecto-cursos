@@ -21,7 +21,7 @@ module.exports = {
             await Curso.create({
                 titulo: req.body.titulo,
                 descripcion: req.body.descripcion,
-                profesor_id: 1 
+                profesor_id: req.usuario.id
             });
             res.redirect('/cursos');
         } catch (error) {

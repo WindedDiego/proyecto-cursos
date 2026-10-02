@@ -2,6 +2,7 @@ const Examen = require('../models/Examen');
 const Pregunta = require('../models/Pregunta');
 const Respuesta = require('../models/Respuesta');
 const Curso = require('../models/Curso');
+const ResultadoExamen = require('../models/ResultadoExamen');
 
 const examenController = {
     listar: async (req, res) => {
@@ -81,7 +82,11 @@ const examenController = {
             if (!examen) {
                 return res.status(404).send('Examen no encontrado');
             }
-            res.render('examenes/detalle', { examen, cursoId: id_curso });
+            res.render('examenes/detalle', {
+                examen,
+                cursoId: id_curso,
+                puedeVerCorrectas: req.usuario.rol !== 'alumno'
+            });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar el detalle del examen');
@@ -198,7 +203,6 @@ const examenController = {
         try {
             const respuestasUsuario = req.body;
             let aciertos = 0;
-            let total = 0;
 
             const id_curso = req.params.id_curso;
             const examenId = req.params.id;
@@ -212,18 +216,32 @@ const examenController = {
                 }]
             });
 
-            if (examen && examen.Preguntas) {
-                total = examen.Preguntas.length;
-                examen.Preguntas.forEach(pregunta => {
-                    const respuestaElegidaId = respuestasUsuario[`pregunta_${pregunta.id}`];
-                    if (respuestaElegidaId && pregunta.Respuestas) {
-                        const encontrada = pregunta.Respuestas.find(r => r.id == respuestaElegidaId);
-                        if (encontrada && encontrada.correcta) {
-                            aciertos++;
-                        }
-                    }
-                });
+            if (!examen) {
+                return res.status(404).send('Examen no encontrado');
             }
+
+            const preguntas = examen.Preguntas || [];
+            if (preguntas.length === 0) {
+                return res.status(400).send('El examen todavía no tiene preguntas');
+            }
+
+            preguntas.forEach(pregunta => {
+                const respuestaElegidaId = respuestasUsuario[`pregunta_${pregunta.id}`];
+                const encontrada = pregunta.Respuestas.find(
+                    respuesta => String(respuesta.id) === String(respuestaElegidaId)
+                );
+                if (encontrada && encontrada.correcta) {
+                    aciertos++;
+                }
+            });
+
+            const total = preguntas.length;
+            await ResultadoExamen.create({
+                examen_id: examen.id,
+                alumno_id: req.usuario.id,
+                aciertos,
+                total
+            });
 
             res.send(`
                 <!DOCTYPE html>

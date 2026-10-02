@@ -17,7 +17,7 @@ router.post('/:id/preguntas', authMiddleware, roleMiddleware('profesor'), Examen
 router.get('/:id/preguntas/:preguntaId/editar', authMiddleware, roleMiddleware('profesor'), ExamenController.editarPreguntaForm);
 router.post('/:id/preguntas/:preguntaId/editar', authMiddleware, roleMiddleware('profesor'), ExamenController.editarPregunta);
 
-router.get('/:id/resolver', authMiddleware, ExamenController.resolverForm);
-router.post('/:id/resolver', authMiddleware, ExamenController.resolver);
+router.get('/:id/resolver', authMiddleware, roleMiddleware('alumno'), ExamenController.resolverForm);
+router.post('/:id/resolver', authMiddleware, roleMiddleware('alumno'), ExamenController.resolver);
 
 module.exports = router;

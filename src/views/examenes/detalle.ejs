@@ -34,8 +34,8 @@
                     <ul class="mb-3">
                         <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
                         <% listaRespuestas.forEach(resp => { %>
-                            <li class="<%= resp.correcta ? 'text-success fw-bold' : '' %>">
-                                <%= resp.texto %> <%= resp.correcta ? '(Correcta)' : '' %>
+                            <li class="<%= puedeVerCorrectas && resp.correcta ? 'text-success fw-bold' : '' %>">
+                                <%= resp.texto %> <%= puedeVerCorrectas && resp.correcta ? '(Correcta)' : '' %>
                             </li>
                         <% }) %>
                     </ul>

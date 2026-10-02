@@ -8,6 +8,7 @@ require('./associations');
 
 // 👉 Importar middleware de registro de actividad
 const activityMiddleware = require('./middlewares/activityMiddleware');
+const authMiddleware = require('./middlewares/authMiddleware');
 
 // 👉 Activar EJS y carpeta de vistas
 app.set('view engine', 'ejs');
@@ -20,7 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ⭐👉 Middleware global: Registra la hora de entrada y salida de CADA RECURSO automáticamente
+// Registra el usuario autenticado cuando la solicitud incluye un token válido.
+app.use(authMiddleware.optional);
+
+// Registra la entrada y salida de cada recurso dinámico.
 app.use(activityMiddleware);
 
 // 👉 Importar rutas de autenticación
