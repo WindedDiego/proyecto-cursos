@@ -1,11 +1,19 @@
+const Usuario = require('../models/Usuario');
+
 module.exports = (rolesPermitidos) => {
-    return (req, res, next) => {
+    return async (req, res, next) => {
         try {
             const usuario = req.usuario;
 
-            if (!usuario) {
+            if (!usuario || !usuario.id) {
                 return res.status(401).json({ mensaje: 'Usuario no autenticado' });
             }
+
+            const usuarioActual = await Usuario.findByPk(usuario.id, { attributes: ['id', 'rol'] });
+            if (!usuarioActual) {
+                return res.status(401).json({ mensaje: 'La cuenta ya no existe' });
+            }
+            usuario.rol = usuarioActual.rol;
 
             // Si rolesPermitidos es un string único, lo convertimos en array
             const rolesArray = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];

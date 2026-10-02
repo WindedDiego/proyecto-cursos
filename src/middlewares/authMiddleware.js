@@ -1,37 +1,53 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
-  try {
-    let token = null;
+const obtenerToken = (req) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
 
-    // 1. Intentar leer del header Authorization
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1];
-    }
-
-    // 2. Si no está en el header, leerlo de las cookies del navegador
-    if (!token && req.headers.cookie) {
-      const cookies = req.headers.cookie.split(';');
-      for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'token') {
-          token = value;
-        }
+  if (req.headers.cookie) {
+    for (const cookie of req.headers.cookie.split(';')) {
+      const separator = cookie.indexOf('=');
+      const name = cookie.slice(0, separator).trim();
+      if (name === 'token') {
+        return cookie.slice(separator + 1).trim();
       }
     }
+  }
 
-    if (!token) {
-      return res.status(401).json({ mensaje: 'Token no proporcionado' });
-    }
+  return null;
+};
 
-    // Verificar token
+const authMiddleware = (req, res, next) => {
+  const token = obtenerToken(req);
+  if (!token) {
+    return res.status(401).json({ mensaje: 'Token no proporcionado' });
+  }
+
+  try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.usuario = decoded;
     next();
-
   } catch (error) {
     console.error('Error en authMiddleware:', error);
     return res.status(401).json({ mensaje: 'Token inválido o expirado' });
   }
 };
+
+authMiddleware.optional = (req, res, next) => {
+  const token = obtenerToken(req);
+  req.usuario = null;
+
+  if (token) {
+    try {
+      req.usuario = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      req.usuario = null;
+    }
+  }
+
+  next();
+};
+
+module.exports = authMiddleware;

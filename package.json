@@ -4,7 +4,8 @@
   "description": "Plataforma de cursos con exámenes, tareas y foros",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "db:migrate": "node src/migrate.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "express": "^4.22.3",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.4",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "umzug": "^3.8.3"
   }
 }

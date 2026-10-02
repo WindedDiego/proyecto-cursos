@@ -8,40 +8,81 @@
 <body class="container mt-4" style="max-width: 600px;">
     <h2>Añadir pregunta al examen</h2>
     <form action="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas" method="POST" class="mt-3">
+        
+        <div class="mb-3">
+            <label class="form-label">Tipo de pregunta</label>
+            <select name="tipo" id="tipoPregunta" class="form-select" onchange="cambiarTipoPregunta()" required>
+                <option value="multiple">Opción Múltiple (Test)</option>
+                <option value="desarrollo">Desarrollo / Abierta</option>
+            </select>
+        </div>
+
         <div class="mb-3">
             <label class="form-label">Enunciado de la pregunta</label>
             <textarea name="enunciado" class="form-control" rows="3" required></textarea>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Respuesta 1</label>
-            <input type="text" name="r1" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Respuesta 2</label>
-            <input type="text" name="r2" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Respuesta 3</label>
-            <input type="text" name="r3" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Respuesta 4</label>
-            <input type="text" name="r4" class="form-control" required>
-        </div>
+        <div id="seccionTest">
+            <div class="mb-3">
+                <label class="form-label">Respuesta 1</label>
+                <input type="text" name="r1" id="r1" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Respuesta 2</label>
+                <input type="text" name="r2" id="r2" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Respuesta 3</label>
+                <input type="text" name="r3" id="r3" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Respuesta 4</label>
+                <input type="text" name="r4" id="r4" class="form-control">
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">¿Cuál es la respuesta correcta? (1, 2, 3 o 4)</label>
-            <select name="correcta" class="form-select" required>
-                <option value="1">Respuesta 1</option>
-                <option value="2">Respuesta 2</option>
-                <option value="3">Respuesta 3</option>
-                <option value="4">Respuesta 4</option>
-            </select>
+            <div class="mb-3">
+                <label class="form-label">¿Cuál es la respuesta correcta? (1, 2, 3 o 4)</label>
+                <select name="correcta" id="correcta" class="form-select">
+                    <option value="1">Respuesta 1</option>
+                    <option value="2">Respuesta 2</option>
+                    <option value="3">Respuesta 3</option>
+                    <option value="4">Respuesta 4</option>
+                </select>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-success">Guardar Pregunta</button>
         <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>" class="btn btn-secondary">Cancelar</a>
     </form>
+
+    <script>
+        function cambiarTipoPregunta() {
+            const tipo = document.getElementById('tipoPregunta').value;
+            const seccionTest = document.getElementById('seccionTest');
+            const r1 = document.getElementById('r1');
+            const r2 = document.getElementById('r2');
+            const r3 = document.getElementById('r3');
+            const r4 = document.getElementById('r4');
+            const correcta = document.getElementById('correcta');
+
+            if (tipo === 'desarrollo') {
+                seccionTest.style.display = 'none';
+                r1.required = false;
+                r2.required = false;
+                r3.required = false;
+                r4.required = false;
+                correcta.required = false;
+            } else {
+                seccionTest.style.display = 'block';
+                r1.required = true;
+                r2.required = true;
+                r3.required = true;
+                r4.required = true;
+                correcta.required = true;
+            }
+        }
+        // Ejecutar al cargar
+        cambiarTipoPregunta();
+    </script>
 </body>
 </html>

@@ -17,17 +17,23 @@
         <form action="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/resolver" method="POST">
             <% listaPreguntas.forEach((pregunta, index) => { %>
                 <div class="card mb-3 p-3 shadow-sm">
-                    <h5>Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
+                    <h5>Pregunta <%= index + 1 %> (<%= pregunta.tipo === 'desarrollo' ? 'Desarrollo' : 'Test' %>): <%= pregunta.enunciado %></h5>
                     <div class="mt-2">
-                        <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
-                        <% listaRespuestas.forEach(resp => { %>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="pregunta_<%= pregunta.id %>" value="<%= resp.id %>" id="resp_<%= resp.id %>" required>
-                                <label class="form-check-label" for="resp_<%= resp.id %>">
-                                    <%= resp.texto %>
-                                </label>
+                        <% if (pregunta.tipo === 'desarrollo') { %>
+                            <div class="mb-3">
+                                <textarea name="pregunta_desarrollo_<%= pregunta.id %>" class="form-control" rows="4" placeholder="Escribe aquí tu respuesta desarrollada..."></textarea>
                             </div>
-                        <% }) %>
+                        <% } else { %>
+                            <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
+                            <% listaRespuestas.forEach(resp => { %>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="pregunta_<%= pregunta.id %>" value="<%= resp.id %>" id="resp_<%= resp.id %>" required>
+                                    <label class="form-check-label" for="resp_<%= resp.id %>">
+                                        <%= resp.texto %>
+                                    </label>
+                                </div>
+                            <% }) %>
+                        <% } %>
                     </div>
                 </div>
             <% }) %>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Calificaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-4">
+    <h1>Mis Calificaciones del Curso</h1>
+    <a href="/cursos/<%= cursoId %>/examenes" class="btn btn-secondary mb-3">← Volver a exámenes</a>
+
+    <h3 class="mt-4">Resultados Exámenes Tipo Test</h3>
+    <% if (resultadosTest.length === 0) { %>
+        <p class="text-muted">No tienes resultados de exámenes tipo test registrados.</p>
+    <% } else { %>
+        <ul class="list-group mb-4">
+            <% resultadosTest.forEach(res => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>Examen: <strong><%= res.examen ? res.examen.tipo : 'General' %></strong></span>
+                    <span class="badge bg-primary rounded-pill"><%= res.aciertos %> / <%= res.total %> aciertos</span>
+                </li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <h3 class="mt-4">Preguntas de Desarrollo Corregidas</h3>
+    <% if (respuestasDesarrollo.length === 0) { %>
+        <p class="text-muted">No has enviado respuestas de desarrollo o aún no están registradas.</p>
+    <% } else { %>
+        <div class="list-group">
+            <% respuestasDesarrollo.forEach(resp => { %>
+                <div class="list-group-item mb-3 p-3 shadow-sm">
+                    <p><strong>Pregunta:</strong> <%= resp.pregunta ? resp.pregunta.enunciado : '' %></p>
+                    <p class="text-muted mb-1"><strong>Tu respuesta:</strong> <%= resp.respuesta_texto %></p>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <!-- AQUÍ VE EL ALUMNO LA NOTA QUE LE PUSO EL PROFESOR -->
+                            <strong>Nota del profesor:</strong> 
+                            <% if (resp.calificacion !== null && resp.calificacion !== undefined) { %>
+                                <span class="text-success fw-bold fs-5"><%= resp.calificacion %></span>
+                            <% } else { %>
+                                <span class="text-warning">Pendiente de corrección</span>
+                            <% } %>
+                        </div>
+                        <% if (resp.feedback) { %>
+                            <div><strong>Feedback:</strong> <em><%= resp.feedback %></em></div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</body>
+</html>

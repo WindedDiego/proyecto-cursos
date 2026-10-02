@@ -2,6 +2,9 @@ const Examen = require('../models/Examen');
 const Pregunta = require('../models/Pregunta');
 const Respuesta = require('../models/Respuesta');
 const Curso = require('../models/Curso');
+const ResultadoExamen = require('../models/ResultadoExamen');
+const RespuestaDesarrollo = require('../models/RespuestaDesarrollo');
+const Usuario = require('../models/Usuario');
 
 const examenController = {
     listar: async (req, res) => {
@@ -12,7 +15,34 @@ const examenController = {
                 return res.status(404).send('El curso seleccionado no existe.');
             }
             const examenes = await Examen.findAll({ where: { curso_id: id_curso } });
-            res.render('examenes/index', { curso, examenes });
+
+            // Si es alumno, buscamos sus resultados y notas para mostrarlos en la lista
+            let misResultadosTest = {};
+            let misNotasDesarrollo = {};
+
+            if (req.usuario && req.usuario.rol === 'alumno') {
+                const alumnoId = req.usuario.id;
+                
+                const resultadosTest = await ResultadoExamen.findAll({ where: { alumno_id: alumnoId } });
+                resultadosTest.forEach(res => {
+                    misResultadosTest[res.examen_id] = res;
+                });
+
+                const notasDesarrollo = await RespuestaDesarrollo.findAll({ where: { alumno_id: alumnoId } });
+                notasDesarrollo.forEach(nd => {
+                    if (!misNotasDesarrollo[nd.examen_id]) {
+                        misNotasDesarrollo[nd.examen_id] = [];
+                    }
+                    misNotasDesarrollo[nd.examen_id].push(nd);
+                });
+            }
+
+            res.render('examenes/index', { 
+                curso, 
+                examenes, 
+                misResultadosTest, 
+                misNotasDesarrollo 
+            });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar los exámenes');
@@ -81,7 +111,11 @@ const examenController = {
             if (!examen) {
                 return res.status(404).send('Examen no encontrado');
             }
-            res.render('examenes/detalle', { examen, cursoId: id_curso });
+            res.render('examenes/detalle', {
+                examen,
+                cursoId: id_curso,
+                puedeVerCorrectas: req.usuario.rol !== 'alumno'
+            });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar el detalle del examen');
@@ -106,19 +140,22 @@ const examenController = {
         try {
             const id_curso = req.params.id_curso;
             const { enunciado, tipo, r1, r2, r3, r4, correcta } = req.body;
+            const tipoPregunta = tipo || 'multiple';
 
             const pregunta = await Pregunta.create({
                 enunciado: enunciado || req.body.texto,
                 examen_id: req.params.id,
-                tipo: tipo || 'multiple'
+                tipo: tipoPregunta
             });
 
-            await Respuesta.bulkCreate([
-                { texto: r1, correcta: String(correcta) === '1', pregunta_id: pregunta.id },
-                { texto: r2, correcta: String(correcta) === '2', pregunta_id: pregunta.id },
-                { texto: r3, correcta: String(correcta) === '3', pregunta_id: pregunta.id },
-                { texto: r4, correcta: String(correcta) === '4', pregunta_id: pregunta.id }
-            ]);
+            if (tipoPregunta === 'multiple') {
+                await Respuesta.bulkCreate([
+                    { texto: r1, correcta: String(correcta) === '1', pregunta_id: pregunta.id },
+                    { texto: r2, correcta: String(correcta) === '2', pregunta_id: pregunta.id },
+                    { texto: r3, correcta: String(correcta) === '3', pregunta_id: pregunta.id },
+                    { texto: r4, correcta: String(correcta) === '4', pregunta_id: pregunta.id }
+                ]);
+            }
 
             res.redirect(`/cursos/${id_curso}/examenes/${req.params.id}`);
         } catch (error) {
@@ -154,15 +191,18 @@ const examenController = {
             const { enunciado, r1, r2, r3, r4, correcta } = req.body;
 
             await Pregunta.update({ enunciado }, { where: { id: preguntaId } });
+            const pregunta = await Pregunta.findByPk(preguntaId);
 
-            const respuestas = await Respuesta.findAll({ where: { pregunta_id: preguntaId } });
-            const textos = [r1, r2, r3, r4];
+            if (pregunta.tipo === 'multiple') {
+                const respuestas = await Respuesta.findAll({ where: { pregunta_id: preguntaId } });
+                const textos = [r1, r2, r3, r4];
 
-            for (let i = 0; i < respuestas.length; i++) {
-                if (respuestas[i]) {
-                    respuestas[i].texto = textos[i];
-                    respuestas[i].correcta = (String(correcta) === String(i + 1));
-                    await respuestas[i].save();
+                for (let i = 0; i < respuestas.length; i++) {
+                    if (respuestas[i]) {
+                        respuestas[i].texto = textos[i];
+                        respuestas[i].correcta = (String(correcta) === String(i + 1));
+                        await respuestas[i].save();
+                    }
                 }
             }
 
@@ -197,11 +237,10 @@ const examenController = {
     resolver: async (req, res) => {
         try {
             const respuestasUsuario = req.body;
-            let aciertos = 0;
-            let total = 0;
-
             const id_curso = req.params.id_curso;
             const examenId = req.params.id;
+            let aciertosTest = 0;
+            let totalTest = 0;
 
             const examen = await Examen.findOne({
                 where: { id: examenId, curso_id: id_curso },
@@ -212,16 +251,44 @@ const examenController = {
                 }]
             });
 
-            if (examen && examen.Preguntas) {
-                total = examen.Preguntas.length;
-                examen.Preguntas.forEach(pregunta => {
-                    const respuestaElegidaId = respuestasUsuario[`pregunta_${pregunta.id}`];
-                    if (respuestaElegidaId && pregunta.Respuestas) {
-                        const encontrada = pregunta.Respuestas.find(r => r.id == respuestaElegidaId);
-                        if (encontrada && encontrada.correcta) {
-                            aciertos++;
-                        }
+            if (!examen) {
+                return res.status(404).send('Examen no encontrado');
+            }
+
+            const preguntas = examen.Preguntas || [];
+            if (preguntas.length === 0) {
+                return res.status(400).send('El examen todavía no tiene preguntas');
+            }
+
+            for (const pregunta of preguntas) {
+                if (pregunta.tipo === 'desarrollo') {
+                    const textoRespuesta = respuestasUsuario[`pregunta_desarrollo_${pregunta.id}`];
+                    if (textoRespuesta && textoRespuesta.trim() !== '') {
+                        await RespuestaDesarrollo.create({
+                            examen_id: examen.id,
+                            pregunta_id: pregunta.id,
+                            alumno_id: req.usuario.id,
+                            respuesta_texto: textoRespuesta.trim()
+                        });
                     }
+                } else {
+                    totalTest++;
+                    const respuestaElegidaId = respuestasUsuario[`pregunta_${pregunta.id}`];
+                    const encontrada = pregunta.Respuestas.find(
+                        respuesta => String(respuesta.id) === String(respuestaElegidaId)
+                    );
+                    if (encontrada && encontrada.correcta) {
+                        aciertosTest++;
+                    }
+                }
+            }
+
+            if (totalTest > 0) {
+                await ResultadoExamen.create({
+                    examen_id: examen.id,
+                    alumno_id: req.usuario.id,
+                    aciertos: aciertosTest,
+                    total: totalTest
                 });
             }
 
@@ -236,7 +303,8 @@ const examenController = {
                 <body class="container mt-5" style="max-width: 600px;">
                     <div class="card shadow p-4 text-center">
                         <h2>Resultado de la Corrección</h2>
-                        <p class="fs-4 mt-3">Has acertado <strong>${aciertos}</strong> de <strong>${total}</strong> preguntas.</p>
+                        ${totalTest > 0 ? `<p class="fs-4 mt-3">Parte Tipo Test: Has acertado <strong>${aciertosTest}</strong> de <strong>${totalTest}</strong> preguntas.</p>` : ''}
+                        <p class="text-muted mt-2">Las preguntas de desarrollo han sido guardadas correctamente para su revisión por el profesor.</p>
                         <a href="/cursos/${id_curso}/examenes" class="btn btn-primary mt-3">Volver a los exámenes</a>
                     </div>
                 </body>
@@ -245,6 +313,36 @@ const examenController = {
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al corregir el examen');
+        }
+    },
+
+    verCorreccionDesarrollo: async (req, res) => {
+        try {
+            const id_curso = req.params.id_curso;
+            const examenId = req.params.id;
+            const entregas = await RespuestaDesarrollo.findAll({
+                where: { examen_id: examenId },
+                include: [
+                    { model: Usuario, as: 'alumno', attributes: ['id', 'nombre', 'email'] },
+                    { model: Pregunta, as: 'pregunta' }
+                ]
+            });
+            res.render('examenes/corregir', { entregas, cursoId: id_curso, examenId });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al cargar panel de corrección');
+        }
+    },
+
+    calificarDesarrollo: async (req, res) => {
+        try {
+            const { calificacion, feedback } = req.body;
+            const entregaId = req.params.entregaId;
+            await RespuestaDesarrollo.update({ calificacion, feedback }, { where: { id: entregaId } });
+            res.redirect('back');
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al guardar calificación');
         }
     }
 };

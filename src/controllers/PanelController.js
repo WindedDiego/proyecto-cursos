@@ -43,12 +43,17 @@ module.exports = {
     panelAlumno: async (req, res) => {
         try {
             const userId = req.usuario.id;
+            const usuario = await Usuario.findByPk(userId);
+            if (!usuario) {
+                return res.status(404).send('No se encontró el usuario del alumno');
+            }
+
             const misActividades = await RegistroActividad.findAll({
                 where: { usuario_id: userId },
                 order: [['hora_entrada', 'DESC']]
             });
 
-            res.render('paneles/alumno', { usuario: req.usuario, misActividades });
+            res.render('paneles/alumno', { usuario, misActividades });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar el panel de alumno');

@@ -4,10 +4,12 @@ const cors = require('cors');
 const express = require('express');
 const app = express();
 const path = require('path');
+const AdminController = require('./controllers/AdminController');
 require('./associations');
 
 // 👉 Importar middleware de registro de actividad
 const activityMiddleware = require('./middlewares/activityMiddleware');
+const authMiddleware = require('./middlewares/authMiddleware');
 
 // 👉 Activar EJS y carpeta de vistas
 app.set('view engine', 'ejs');
@@ -18,9 +20,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+app.get('/', AdminController.home);
 app.use(express.static(path.join(__dirname, '../public')));
 
-// ⭐👉 Middleware global: Registra la hora de entrada y salida de CADA RECURSO automáticamente
+// Registra el usuario autenticado cuando la solicitud incluye un token válido.
+app.use(authMiddleware.optional);
+
+// Registra la entrada y salida de cada recurso dinámico.
 app.use(activityMiddleware);
 
 // 👉 Importar rutas de autenticación
@@ -44,6 +50,7 @@ const forosRoutes = require('./routes/foros');
 
 // ⭐👉 Importar rutas de paneles
 const panelesRoutes = require('./routes/paneles');
+const usuariosRoutes = require('./routes/usuarios');
 
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
@@ -59,24 +66,24 @@ app.use('/cursos/:id_curso/foros', forosRoutes);
 
 // ⭐👉 Conectar rutas de paneles
 app.use('/paneles', panelesRoutes);
+app.use('/usuarios', usuariosRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Curso online funcionando 🚀');
-});
-
-sequelize.authenticate()
-  .then(() => {
+async function start() {
+  try {
+    await sequelize.authenticate();
     console.log('Conexión a la base de datos establecida ✔');
-    return sequelize.sync(); // 👈 Quitamos el { alter: true }
-  })
-  .then(() => console.log('Tablas sincronizadas ✔'))
-  .catch(err => console.error('Error al conectar a la base de datos ❌', err));
+    app.listen(PORT, () => {
+      console.log(`Servidor escuchando en puerto ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error al conectar a la base de datos ❌', error);
+    process.exitCode = 1;
+  }
+}
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+start();

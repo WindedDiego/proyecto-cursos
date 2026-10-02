@@ -7,6 +7,15 @@
   <label>Descripción</label>
   <textarea name="descripcion" required></textarea>
 
+  <% if (usuario.rol === 'administrador') { %>
+    <label>Profesor responsable</label>
+    <select name="profesor_id" required>
+      <% profesores.forEach(profesor => { %>
+        <option value="<%= profesor.id %>"><%= profesor.nombre %> (<%= profesor.email %>)</option>
+      <% }) %>
+    </select>
+  <% } %>
+
   <button type="submit">Crear curso</button>
 </form>
 

@@ -12,9 +12,13 @@
     <div class="mb-4">
         <!-- Botón de añadir pregunta exclusivo para profesor -->
         <div id="btn-crear-pregunta" class="d-inline-block d-none me-2">
-            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas" class="btn btn-primary">➕ Añadir nueva pregunta</a>
+            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas" class="btn btn-primary">➕ Añadir pregunta (Test / Desarrollo)</a>
         </div>
-        <!-- Alumno hace el examen, observador solo audita -->
+        <!-- Botón de corregir exámenes de desarrollo -->
+        <div id="btn-corregir-desarrollo" class="d-inline-block d-none me-2">
+            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/corregir" class="btn btn-dark">📝 Corregir desarrollo</a>
+        </div>
+        <!-- Alumno hace el examen -->
         <div id="btn-alumno-resolver" class="d-inline-block d-none">
             <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/resolver" class="btn btn-success">✏️ Hacer este examen</a>
         </div>
@@ -30,15 +34,26 @@
         <div class="list-group">
             <% listaPreguntas.forEach((pregunta, index) => { %>
                 <div class="list-group-item mb-3 shadow-sm p-3">
-                    <h5>Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
-                    <ul class="mb-3">
-                        <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
-                        <% listaRespuestas.forEach(resp => { %>
-                            <li class="<%= resp.correcta ? 'text-success fw-bold' : '' %>">
-                                <%= resp.texto %> <%= resp.correcta ? '(Correcta)' : '' %>
-                            </li>
-                        <% }) %>
-                    </ul>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
+                        <span class="badge bg-<%= pregunta.tipo === 'desarrollo' ? 'info' : 'secondary' %>">
+                            <%= pregunta.tipo === 'desarrollo' ? 'Desarrollo (Abierta)' : 'Opción Múltiple' %>
+                        </span>
+                    </div>
+
+                    <% if (pregunta.tipo === 'multiple') { %>
+                        <ul class="mb-3 mt-2">
+                            <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
+                            <% listaRespuestas.forEach(resp => { %>
+                                <li class="<%= puedeVerCorrectas && resp.correcta ? 'text-success fw-bold' : '' %>">
+                                    <%= resp.texto %> <%= puedeVerCorrectas && resp.correcta ? '(Correcta)' : '' %>
+                                </li>
+                            <% }) %>
+                        </ul>
+                    <% } else { %>
+                        <p class="text-muted small mt-2 mb-3"><i>Pregunta abierta de respuesta escrita por el alumno.</i></p>
+                    <% } %>
+
                     <!-- Botón de modificar pregunta exclusivo para profesor -->
                     <div class="btn-modificar-pregunta d-none">
                         <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas/<%= pregunta.id %>/editar" class="btn btn-sm btn-outline-dark">Modificar pregunta</a>
@@ -65,9 +80,11 @@
         }
 
         const rol = obtenerRolDeToken();
-        if (rol === 'profesor') {
+        if (rol === 'profesor' || rol === 'administrador') {
             const btnCrear = document.getElementById('btn-crear-pregunta');
             if (btnCrear) btnCrear.classList.remove('d-none');
+            const btnCorregir = document.getElementById('btn-corregir-desarrollo');
+            if (btnCorregir) btnCorregir.classList.remove('d-none');
             document.querySelectorAll('.btn-modificar-pregunta').forEach(el => el.classList.remove('d-none'));
         } else if (rol === 'alumno') {
             const btnResolver = document.getElementById('btn-alumno-resolver');

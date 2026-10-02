@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #confirmar-eliminacion-dialog {
+            border: 1px solid #adb5bd;
+            border-radius: 6px;
+            max-width: 480px;
+            width: calc(100% - 2rem);
+        }
+        #confirmar-eliminacion-dialog::backdrop { background: rgb(0 0 0 / 55%); }
+    </style>
+</head>
+<body class="container mt-4">
+    <h1>Administrar usuarios</h1>
+    <p>Sesión iniciada como <strong><%= usuario.nombre %></strong></p>
+    <a href="/cursos" class="btn btn-outline-secondary mb-4">Volver a cursos</a>
+
+    <h2 class="h4">Crear cuenta</h2>
+    <form id="crear-usuario-form" class="admin-form mb-4" action="/usuarios" method="POST" data-create-user>
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input id="nombre" name="nombre" class="form-control" maxlength="100" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input id="email" name="email" type="email" class="form-control" maxlength="100" required>
+        </div>
+        <div class="mb-3">
+            <label for="contrasena" class="form-label">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" class="form-control" minlength="12" required>
+        </div>
+        <div class="mb-3">
+            <label for="rol" class="form-label">Rol</label>
+            <select id="rol" name="rol" class="form-select" required>
+                <option value="alumno">Alumno</option>
+                <option value="profesor">Profesor</option>
+                <option value="observador">Observador</option>
+                <option value="administrador">Administrador</option>
+            </select>
+        </div>
+        <div class="mb-3" data-student-courses>
+            <label for="nuevos-cursos" class="form-label">Cursos para matricular al alumno</label>
+            <select id="nuevos-cursos" name="curso_ids" class="form-select" multiple size="5">
+                <% cursos.forEach(curso => { %>
+                    <option value="<%= curso.id %>"><%= curso.titulo %></option>
+                <% }) %>
+            </select>
+            <div class="form-text">Solo se usa para cuentas de alumno. Las asignaciones de profesores se gestionan por curso.</div>
+        </div>
+        <button class="btn btn-primary" type="submit">Crear usuario</button>
+        <div class="mt-3" data-result role="status" aria-live="polite"></div>
+    </form>
+
+    <h2 class="h4">Cuentas registradas</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label for="filtro-rol" class="form-label">Filtrar por rol</label>
+            <select id="filtro-rol" class="form-select">
+                <option value="">Todos los roles</option>
+                <option value="alumno">Alumno</option>
+                <option value="profesor">Profesor</option>
+                <option value="observador">Observador</option>
+                <option value="administrador">Administrador</option>
+            </select>
+        </div>
+        <div class="col-md-8">
+            <label for="buscar-usuario" class="form-label">Buscar por nombre</label>
+            <input id="buscar-usuario" type="search" class="form-control" placeholder="Escribe un nombre">
+        </div>
+    </div>
+    <p id="usuarios-visibles" class="text-muted" aria-live="polite"></p>
+
+    <% usuarios.forEach(cuenta => { %>
+        <% const idsMatriculados = (cuenta.cursosMatriculados || []).map(curso => Number(curso.id)); %>
+        <form class="admin-form border rounded p-3 mb-3" action="/usuarios/<%= cuenta.id %>" method="POST"
+              data-user-record data-user-role="<%= cuenta.rol %>" data-user-name="<%= cuenta.nombre.toLowerCase() %>">
+            <div class="row g-3">
+                <div class="col-lg-3">
+                    <label for="nombre-<%= cuenta.id %>" class="form-label">Nombre</label>
+                    <input id="nombre-<%= cuenta.id %>" name="nombre" class="form-control" maxlength="100" value="<%= cuenta.nombre %>" required>
+                </div>
+                <div class="col-lg-3">
+                    <label for="email-<%= cuenta.id %>" class="form-label">Correo</label>
+                    <input id="email-<%= cuenta.id %>" name="email" type="email" class="form-control" maxlength="100" value="<%= cuenta.email %>" required>
+                </div>
+                <div class="col-lg-2">
+                    <label for="rol-<%= cuenta.id %>" class="form-label">Rol</label>
+                    <select id="rol-<%= cuenta.id %>" name="rol" class="form-select" required>
+                        <% ['alumno', 'profesor', 'observador', 'administrador'].forEach(rol => { %>
+                            <option value="<%= rol %>" <%= cuenta.rol === rol ? 'selected' : '' %>><%= rol.charAt(0).toUpperCase() + rol.slice(1) %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-lg-3" data-student-courses>
+                    <label for="cursos-<%= cuenta.id %>" class="form-label">Cursos del alumno</label>
+                    <select id="cursos-<%= cuenta.id %>" name="curso_ids" class="form-select" multiple size="3">
+                        <% cursos.forEach(curso => { %>
+                            <option value="<%= curso.id %>" <%= idsMatriculados.includes(Number(curso.id)) ? 'selected' : '' %>><%= curso.titulo %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-lg-1 d-flex align-items-end">
+                    <button class="btn btn-outline-primary w-100" type="submit">Guardar</button>
+                </div>
+                <% if (Number(cuenta.id) !== Number(usuario.id) && (cuenta.rol !== 'administrador' || totalAdministradores > 1)) { %>
+                    <div class="col-lg-2 d-flex align-items-end">
+                        <button class="btn btn-outline-danger w-100" type="button" data-delete-user
+                                data-user-id="<%= cuenta.id %>" data-user-name="<%= cuenta.nombre %>">Eliminar</button>
+                    </div>
+                <% } %>
+                <div class="col-lg-4">
+                    <label for="contrasena-<%= cuenta.id %>" class="form-label">Nueva contraseña (opcional)</label>
+                    <input id="contrasena-<%= cuenta.id %>" name="contrasena" type="password" class="form-control" minlength="12" autocomplete="new-password">
+                </div>
+                <% if (cuenta.rol === 'profesor') { %>
+                    <div class="col-lg-8 d-flex align-items-end text-muted">Los cursos impartidos se asignan en la sección de cursos.</div>
+                <% } %>
+            </div>
+            <div class="mt-2" data-result role="status" aria-live="polite"></div>
+        </form>
+    <% }) %>
+
+    <dialog id="confirmar-eliminacion-dialog">
+        <form id="confirmar-eliminacion-form">
+            <h2 class="h5">Confirmar eliminación</h2>
+            <p id="aviso-eliminacion" class="text-danger"></p>
+            <p>Se borrarán sus matrículas, entregas, mensajes de foro y resultados de exámenes. Su actividad se conservará anonimizada. Esta acción no se puede deshacer.</p>
+            <div class="mb-3">
+                <label for="contrasena-admin-borrado" class="form-label">Contraseña actual del administrador</label>
+                <input id="contrasena-admin-borrado" name="contrasena" type="password" class="form-control" autocomplete="current-password" required>
+            </div>
+            <div id="resultado-eliminacion" class="mb-3" role="status" aria-live="polite"></div>
+            <div class="d-flex justify-content-end gap-2">
+                <button id="cancelar-eliminacion" type="button" class="btn btn-outline-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-danger">Continuar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <h2 class="h4 mt-5">Cursos y profesores</h2>
+    <% cursos.forEach(curso => { %>
+        <form class="admin-form border rounded p-3 mb-3" action="/usuarios/cursos/<%= curso.id %>/profesor" method="POST">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5"><strong><%= curso.titulo %></strong></div>
+                <div class="col-md-5">
+                    <label for="profesor-<%= curso.id %>" class="form-label">Profesor responsable</label>
+                    <select id="profesor-<%= curso.id %>" name="profesor_id" class="form-select" required>
+                        <option value="">Selecciona profesor</option>
+                        <% profesores.forEach(profesor => { %>
+                            <option value="<%= profesor.id %>" <%= Number(curso.profesor_id) === Number(profesor.id) ? 'selected' : '' %>><%= profesor.nombre %> (<%= profesor.email %>)</option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Asignar</button></div>
+            </div>
+            <div class="mt-2" data-result role="status" aria-live="polite"></div>
+        </form>
+    <% }) %>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.assign('/auth/login');
+
+        const filtroRol = document.getElementById('filtro-rol');
+        const busquedaNombre = document.getElementById('buscar-usuario');
+        const registrosUsuario = [...document.querySelectorAll('[data-user-record]')];
+        const usuariosVisibles = document.getElementById('usuarios-visibles');
+
+        function filtrarUsuarios() {
+            const rol = filtroRol.value;
+            const nombre = busquedaNombre.value.trim().toLocaleLowerCase();
+            let visibles = 0;
+
+            registrosUsuario.forEach(registro => {
+                const coincideRol = !rol || registro.dataset.userRole === rol;
+                const coincideNombre = registro.dataset.userName.includes(nombre);
+                registro.hidden = !(coincideRol && coincideNombre);
+                if (!registro.hidden) visibles++;
+            });
+
+            usuariosVisibles.textContent = `${visibles} de ${registrosUsuario.length} usuarios`;
+        }
+
+        filtroRol.addEventListener('change', filtrarUsuarios);
+        busquedaNombre.addEventListener('input', filtrarUsuarios);
+        filtrarUsuarios();
+
+        document.querySelectorAll('.admin-form').forEach(form => {
+            const roleField = form.querySelector('[name="rol"]');
+            const courseField = form.querySelector('[name="curso_ids"]');
+            const courseGroup = form.querySelector('[data-student-courses]');
+
+            function updateCourseVisibility() {
+                if (!roleField || !courseField || !courseGroup) return;
+                const isStudent = roleField.value === 'alumno';
+                courseGroup.hidden = !isStudent;
+                courseField.disabled = !isStudent;
+            }
+
+            if (roleField) {
+                roleField.addEventListener('change', updateCourseVisibility);
+                updateCourseVisibility();
+            }
+
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                const result = form.querySelector('[data-result]');
+                result.textContent = '';
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams(new FormData(form))
+                    });
+                    const body = await response.json();
+                    if (!response.ok) throw new Error(body.mensaje || 'No se pudo guardar');
+                    result.className = 'mt-2 text-success';
+                    result.textContent = body.mensaje;
+                    window.setTimeout(() => window.location.reload(), 500);
+                } catch (error) {
+                    result.className = 'mt-2 text-danger';
+                    result.textContent = error.message;
+                }
+            });
+        });
+
+        const dialogoEliminacion = document.getElementById('confirmar-eliminacion-dialog');
+        const formularioEliminacion = document.getElementById('confirmar-eliminacion-form');
+        const passwordAdminBorrado = document.getElementById('contrasena-admin-borrado');
+        const resultadoEliminacion = document.getElementById('resultado-eliminacion');
+        const avisoEliminacion = document.getElementById('aviso-eliminacion');
+        let usuarioAEliminar = null;
+
+        document.querySelectorAll('[data-delete-user]').forEach(button => {
+            button.addEventListener('click', () => {
+                usuarioAEliminar = button.dataset.userId;
+                avisoEliminacion.textContent = `Vas a eliminar la cuenta de ${button.dataset.userName}.`;
+                passwordAdminBorrado.value = '';
+                resultadoEliminacion.textContent = '';
+                dialogoEliminacion.showModal();
+            });
+        });
+
+        document.getElementById('cancelar-eliminacion').addEventListener('click', () => {
+            dialogoEliminacion.close();
+            usuarioAEliminar = null;
+        });
+
+        formularioEliminacion.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (!usuarioAEliminar || !passwordAdminBorrado.value) return;
+            if (!window.confirm('Confirma que deseas eliminar permanentemente esta cuenta.')) return;
+
+            try {
+                const response = await fetch(`/usuarios/${usuarioAEliminar}/eliminar`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({ contrasena: passwordAdminBorrado.value })
+                });
+                const body = await response.json();
+                if (!response.ok) throw new Error(body.mensaje || 'No se pudo eliminar la cuenta');
+                dialogoEliminacion.close();
+                window.location.reload();
+            } catch (error) {
+                resultadoEliminacion.className = 'mb-3 text-danger';
+                resultadoEliminacion.textContent = error.message;
+                passwordAdminBorrado.value = '';
+            }
+        });
+    </script>
+</body>
+</html>

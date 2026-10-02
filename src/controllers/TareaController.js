@@ -14,7 +14,9 @@ module.exports = {
             }
 
             const tareas = await Tarea.findAll({ 
-                where: { curso_id: id_curso },
+                where: req.usuario.rol === 'alumno'
+                    ? { curso_id: id_curso, alumno_id: req.usuario.id }
+                    : { curso_id: id_curso },
                 include: [{ model: Usuario, as: 'alumno' }] // Por si quieres mostrar el nombre del alumno
             });
             
@@ -48,13 +50,9 @@ module.exports = {
             const id_curso = req.params.id_curso;
             const { url_archivo } = req.body;
             
-            // Nota: Aquí el alumno_id lo podemos sacar del usuario logueado en la sesión (req.user.id)
-            // De momento, si lo estás probando a mano, puedes poner un ID fijo o sacarlo del token/sesión.
-            const alumno_id = req.user ? req.user.id : 1; 
-
             await Tarea.create({
                 curso_id: id_curso,
-                alumno_id: alumno_id,
+                alumno_id: req.usuario.id,
                 url_archivo: url_archivo
             });
             

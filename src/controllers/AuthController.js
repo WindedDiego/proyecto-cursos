@@ -11,7 +11,7 @@ module.exports = {
       const nombre = req.body.nombre;
       const email = req.body.email;
       const passwordPlain = req.body.contraseña || req.body.contrasena;
-      const rol = req.body.rol;
+      const rol = 'alumno';
 
       if (!passwordPlain) {
         return res.status(400).json({ mensaje: 'La contraseña es obligatoria' });

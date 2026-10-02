@@ -14,7 +14,11 @@ module.exports = {
 
             const contenidos = await Contenido.findAll({ where: { curso_id: id_curso } });
             
-            res.render('contenidos/index', { curso, contenidos });
+            res.render('contenidos/index', {
+                curso,
+                contenidos,
+                puedeGestionar: ['profesor', 'administrador'].includes(req.usuario.rol)
+            });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar los contenidos');
@@ -52,6 +56,28 @@ module.exports = {
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al guardar el contenido');
+        }
+    },
+
+    editar: async (req, res) => {
+        try {
+            const id_curso = req.params.id_curso;
+            const tipo = String(req.body.tipo || '').trim();
+            const url_archivo = String(req.body.url_archivo || '').trim();
+            if (!tipo || tipo.length > 50) {
+                return res.status(400).send('El tipo de contenido es obligatorio y admite hasta 50 caracteres');
+            }
+
+            const contenido = await Contenido.findOne({
+                where: { id: req.params.contenidoId, curso_id: id_curso }
+            });
+            if (!contenido) return res.status(404).send('Contenido no encontrado');
+
+            await contenido.update({ tipo, url_archivo: url_archivo || null });
+            return res.redirect(`/cursos/${id_curso}/contenidos`);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).send('Error al actualizar el contenido');
         }
     }
 };
