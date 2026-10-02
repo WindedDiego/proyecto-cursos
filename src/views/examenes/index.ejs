@@ -67,7 +67,7 @@
         }
 
         const rol = obtenerRolDeToken();
-        if (rol === 'profesor') {
+        if (rol === 'profesor' || rol === 'administrador') {
             document.getElementById('seccion-profesor-crear').classList.remove('d-none');
             document.querySelectorAll('.botones-profesor').forEach(el => el.classList.remove('d-none'));
         } else if (rol === 'observador') {

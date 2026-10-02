@@ -50,6 +50,9 @@
         if (rolUsuario === 'profesor') {
             contenedor.innerHTML = '<a href="/paneles/profesor" class="btn btn-warning">Ir a mi Panel de Profesor 👨‍🏫</a>';
             document.getElementById('seccion-crear-curso').classList.remove('d-none');
+        } else if (rolUsuario === 'administrador') {
+            contenedor.innerHTML = '<a href="/paneles/administrador" class="btn btn-dark">Administrar plataforma</a>';
+            document.getElementById('seccion-crear-curso').classList.remove('d-none');
         } else if (rolUsuario === 'observador') {
             contenedor.innerHTML = '<a href="/paneles/observador" class="btn btn-info">Ir a Informes / Observador 🕵️</a>';
         } else if (rolUsuario === 'alumno') {

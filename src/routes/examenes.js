@@ -3,21 +3,24 @@ const router = express.Router({ mergeParams: true });
 const ExamenController = require('../controllers/examenController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
+const courseAccessMiddleware = require('../middlewares/courseAccessMiddleware');
 
-router.get('/', authMiddleware, ExamenController.listar);
+router.use(authMiddleware, courseAccessMiddleware);
 
-router.get('/crear', authMiddleware, roleMiddleware('profesor'), ExamenController.crearForm);
-router.post('/crear', authMiddleware, roleMiddleware('profesor'), ExamenController.crear);
+router.get('/', ExamenController.listar);
 
-router.get('/:id', authMiddleware, ExamenController.detalle);
+router.get('/crear', roleMiddleware(['profesor', 'administrador']), ExamenController.crearForm);
+router.post('/crear', roleMiddleware(['profesor', 'administrador']), ExamenController.crear);
 
-router.get('/:id/preguntas', authMiddleware, roleMiddleware('profesor'), ExamenController.agregarPreguntasForm);
-router.post('/:id/preguntas', authMiddleware, roleMiddleware('profesor'), ExamenController.agregarPreguntas);
+router.get('/:id', ExamenController.detalle);
 
-router.get('/:id/preguntas/:preguntaId/editar', authMiddleware, roleMiddleware('profesor'), ExamenController.editarPreguntaForm);
-router.post('/:id/preguntas/:preguntaId/editar', authMiddleware, roleMiddleware('profesor'), ExamenController.editarPregunta);
+router.get('/:id/preguntas', roleMiddleware(['profesor', 'administrador']), ExamenController.agregarPreguntasForm);
+router.post('/:id/preguntas', roleMiddleware(['profesor', 'administrador']), ExamenController.agregarPreguntas);
 
-router.get('/:id/resolver', authMiddleware, roleMiddleware('alumno'), ExamenController.resolverForm);
-router.post('/:id/resolver', authMiddleware, roleMiddleware('alumno'), ExamenController.resolver);
+router.get('/:id/preguntas/:preguntaId/editar', roleMiddleware(['profesor', 'administrador']), ExamenController.editarPreguntaForm);
+router.post('/:id/preguntas/:preguntaId/editar', roleMiddleware(['profesor', 'administrador']), ExamenController.editarPregunta);
+
+router.get('/:id/resolver', roleMiddleware('alumno'), ExamenController.resolverForm);
+router.post('/:id/resolver', roleMiddleware('alumno'), ExamenController.resolver);
 
 module.exports = router;

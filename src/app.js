@@ -4,6 +4,7 @@ const cors = require('cors');
 const express = require('express');
 const app = express();
 const path = require('path');
+const AdminController = require('./controllers/AdminController');
 require('./associations');
 
 // 👉 Importar middleware de registro de actividad
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+app.get('/', AdminController.home);
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Registra el usuario autenticado cuando la solicitud incluye un token válido.
@@ -48,6 +50,7 @@ const forosRoutes = require('./routes/foros');
 
 // ⭐👉 Importar rutas de paneles
 const panelesRoutes = require('./routes/paneles');
+const usuariosRoutes = require('./routes/usuarios');
 
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
@@ -63,15 +66,12 @@ app.use('/cursos/:id_curso/foros', forosRoutes);
 
 // ⭐👉 Conectar rutas de paneles
 app.use('/paneles', panelesRoutes);
+app.use('/usuarios', usuariosRoutes);
 
 // Hacemos que los contenidos dependan (cuelguen) de un curso específico
 app.use('/cursos/:id_curso/contenidos', contenidosRoutes);
 
 const PORT = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-  res.send('Curso online funcionando 🚀');
-});
 
 async function start() {
   try {

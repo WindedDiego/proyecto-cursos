@@ -48,7 +48,7 @@
         }
 
         const rol = obtenerRolDeToken();
-        if (rol === 'profesor') {
+        if (rol === 'profesor' || rol === 'administrador') {
             document.getElementById('seccion-editar-curso').classList.remove('d-none');
             document.getElementById('seccion-eliminar-curso').classList.remove('d-none');
         }

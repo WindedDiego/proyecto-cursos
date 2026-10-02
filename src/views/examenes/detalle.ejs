@@ -65,7 +65,7 @@
         }
 
         const rol = obtenerRolDeToken();
-        if (rol === 'profesor') {
+        if (rol === 'profesor' || rol === 'administrador') {
             const btnCrear = document.getElementById('btn-crear-pregunta');
             if (btnCrear) btnCrear.classList.remove('d-none');
             document.querySelectorAll('.btn-modificar-pregunta').forEach(el => el.classList.remove('d-none'));
