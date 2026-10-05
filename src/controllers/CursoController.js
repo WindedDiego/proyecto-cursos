@@ -1,6 +1,8 @@
 const Curso = require('../models/Curso');
 const Usuario = require('../models/Usuario');
 const Matricula = require('../models/Matricula');
+const ResultadoExamen = require('../models/ResultadoExamen');
+const Examen = require('../models/Examen');
 
 module.exports = {
     listar: async (req, res) => {
@@ -16,7 +18,11 @@ module.exports = {
         } else {
             cursos = await Curso.findAll();
         }
-        res.render('cursos/index', { cursos });
+        
+        // Definir permisos de gestión
+        const puedeGestionar = req.usuario.rol === 'administrador' || req.usuario.rol === 'profesor';
+
+        res.render('cursos/index', { cursos, puedeGestionar });
     },
 
     detalle: async (req, res) => {
@@ -95,5 +101,61 @@ module.exports = {
     eliminar: async (req, res) => {
         await Curso.destroy({ where: { id: req.params.id } });
         res.redirect('/cursos');
+    },
+
+    resultados: async (req, res) => {
+        try {
+            const cursoId = req.params.id;
+
+            const curso = await Curso.findByPk(cursoId);
+            if (!curso) return res.status(404).send('Curso no encontrado');
+
+            const examenes = await Examen.findAll({
+                where: { curso_id: cursoId }
+            });
+
+            const examenIds = examenes.map(e => e.id);
+
+            const resultados = await ResultadoExamen.findAll({
+                where: { examen_id: examenIds },
+                attributes: ['id', 'examen_id', 'alumno_id', 'aciertos', 'total', 'fecha'],
+                include: [
+                    {
+                        model: Usuario,
+                        attributes: ['nombre'],
+                        required: true
+                    },
+                    {
+                        model: Examen,
+                        attributes: ['tipo'],
+                        required: true
+                    }
+                ],
+                order: [['fecha', 'DESC']]
+            });
+
+            const resultadosFinales = resultados.map(r => {
+                return {
+                    id: r.id,
+                    fecha: r.fecha,
+                    aciertos: r.aciertos,
+                    total: r.total,
+                    nombreAlumno: r.alumno ? r.alumno.nombre : 'N/A',
+                    tipoExamen: r.examen ? r.examen.tipo : 'N/A'
+                };
+            });
+
+            res.render('cursos/resultados', { 
+                curso,      
+                cursoId, 
+                resultados: resultadosFinales, 
+                examenes 
+            });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al obtener los resultados');
+        }
     }
+
 };

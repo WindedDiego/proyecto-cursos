@@ -1,0 +1,162 @@
+/* Importaciones de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Montserrat:wght@600;800&display=swap');
+
+:root {
+    /* Paleta de Colores: Verde Bosque y Sage */
+    --verde-primario: #2d6a4f;       /* Verde oscuro elegante */
+    --verde-secundario: #95d5b2;     /* Verde pistacho/sage */
+    --verde-claro: #d8f3dc;          /* Verde muy suave para fondos */
+    --beige-fondo: #f8f9fa;          /* Fondo crema/beige */
+    --blanco: #ffffff;
+    --texto-principal: #1b4332;      /* Verde casi negro para máxima legibilidad */
+    --texto-secundario: #495057;
+    
+    /* Sombras y Bordes */
+    --sombra: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --radio-grande: 12px;
+    --radio-pequeno: 8px;
+}
+
+/* Reset Básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    background-color: var(--beige-fondo);
+    color: var(--texto-secundario);
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, .titulo-seccion {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--verde-primario);
+    font-weight: 800;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Encabezado de Sección */
+.header-seccion {
+    background-color: var(--blanco);
+    padding: 30px;
+    border-radius: var(--radio-grande);
+    box-shadow: var(--sombra);
+    margin-bottom: 30px;
+    border-bottom: 4px solid var(--verde-primario);
+}
+
+.header-seccion h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Barra de Botones */
+.barra-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Botones Uniformes */
+.btn {
+    padding: 12px 24px;
+    border-radius: var(--radio-pequeno);
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+}
+
+.btn-primario {
+    background-color: var(--verde-primario);
+    color: var(--blanco);
+}
+
+.btn-primario:hover {
+    background-color: var(--verde-secundario);
+    color: var(--verde-primario);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-secundario {
+    background-color: var(--verde-secundario);
+    color: var(--verde-primario);
+}
+
+.btn-secundario:hover {
+    background-color: var(--verde-primario);
+    color: var(--blanco);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Tarjetas de Contenido */
+.tarjeta-contenido {
+    background-color: var(--blanco);
+    padding: 25px;
+    border-radius: var(--radio-grande);
+    box-shadow: var(--sombra);
+    margin-bottom: 20px;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* Tablas Estilizadas */
+.tabla-resultados {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.tabla-resultados th {
+    background-color: var(--verde-primario);
+    color: var(--blanco);
+    padding: 15px;
+    text-align: left;
+}
+
+.tabla-resultados td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.tabla-resultados tr:hover {
+    background-color: var(--verde-claro);
+}
+
+/* Adaptabilidad Móvil */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header-seccion {
+        padding: 20px;
+    }
+
+    .barra-botones {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+}

@@ -2,24 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tareas del curso - <%= curso.titulo %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1>Tareas para el curso: <%= curso.titulo %></h1>
-    <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primary my-3">Subir nueva tarea</a>
-    <a href="/cursos/<%= curso.id %>" class="btn btn-secondary my-3">Volver al curso</a>
+<body class="bg-beige">
+    <div class="container">
+        <header class="header-seccion">
+            <h1>Tareas para el curso: <%= curso.titulo %></h1>
+            <div class="barra-botones">
+                <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primario">Subir nueva tarea</a>
+                <a href="/cursos/<%= curso.id %>" class="btn btn-secundario">Volver al curso</a>
+                <div id="panel-container" class="ms-auto"></div>
+            </div>
+        </header>
 
-    <ul class="list-group">
-        <% if (tareas.length === 0) { %>
-            <p class="text-muted">No hay tareas enviadas todavía.</p>
-        <% } else { %>
-            <% tareas.forEach(tarea => { %>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>Archivo: <a href="<%= tarea.url_archivo %>" target="_blank"><%= tarea.url_archivo %></a> (Enviado el: <%= tarea.fecha_envio %>)</span>
-                </li>
-            <% }) %>
-        <% } %>
-    </ul>
+        <main class="tarjeta-contenido">
+            <% if (tareas.length === 0) { %>
+                <p class="text-muted">No hay tareas enviadas todavía.</p>
+            <% } else { %>
+                <ul class="list-group">
+                    <% tareas.forEach(tarea => { %>
+                        <li class="list-group-item p-4 d-flex justify-content-between align-items-center gap-3">
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-verde-primario">Archivo enviado:</span>
+                                <a href="<%= tarea.url_archivo %>" target="_blank" class="text-decoration-none">
+                                    <%= tarea.url_archivo %>
+                                </a>
+                                <span class="text-muted small">Enviado el: <%= tarea.fecha_envio %></span>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } %>
+        </main>
+    </div>
+<script>
+    function obtenerRolDeToken() {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload).rol;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    const rolUsuario = obtenerRolDeToken();
+    const contenedor = document.getElementById('panel-container');
+
+    if (rolUsuario === 'profesor') {
+        contenedor.innerHTML = '<a href="/paneles/profesor" class="btn btn-primario">Ir a mi Panel de Profesor 👨‍🏫</a>';
+    } else if (rolUsuario === 'administrador') {
+        contenedor.innerHTML = '<a href="/paneles/administrador" class="btn btn-primario">Administrar plataforma</a>';
+    } else if (rolUsuario === 'observador') {
+        contenedor.innerHTML = '<a href="/paneles/observador" class="btn btn-secundario">Ir a Informes / Observador 🕵️</a>';
+    } else if (rolUsuario === 'alumno') {
+        contenedor.innerHTML = '<a href="/paneles/alumno" class="btn btn-secundario">Ver mi Panel de Alumno 👨‍🎓</a>';
+    }
+</script>
 </body>
 </html>
