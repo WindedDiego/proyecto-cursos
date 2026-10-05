@@ -1,6 +1,8 @@
 const Curso = require('../models/Curso');
 const Usuario = require('../models/Usuario');
 const Matricula = require('../models/Matricula');
+const ResultadoExamen = require('../models/ResultadoExamen');
+const Examen = require('../models/Examen');
 
 module.exports = {
     listar: async (req, res) => {
@@ -95,5 +97,58 @@ module.exports = {
     eliminar: async (req, res) => {
         await Curso.destroy({ where: { id: req.params.id } });
         res.redirect('/cursos');
+    },
+
+    resultados: async (req, res) => {
+        try {
+            const cursoId = req.params.id;
+
+            const curso = await Curso.findByPk(cursoId);
+            if (!curso) return res.status(404).send('Curso no encontrado');
+
+            const examenes = await Examen.findAll({
+                where: { curso_id: cursoId }
+            });
+
+            const examenIds = examenes.map(e => e.id);
+
+            const resultados = await ResultadoExamen.findAll({
+                where: { examen_id: examenIds },
+                include: [
+                    {
+                        model: Usuario,
+                        as: 'alumno',
+                        attributes: ['nombre']
+                    },
+                    {
+                        model: Examen,
+                        as: 'examen',
+                        attributes: ['tipo']
+                    }
+                ],
+                order: [['fecha', 'DESC']]
+            });
+
+            // Mapeamos los resultados para que la vista tenga acceso directo a nombreAlumno y tipoExamen
+            const resultadosFinales = resultados.map(r => {
+                return {
+                    ...r.toJSON(),
+                    nombreAlumno: r.alumno ? r.alumno.nombre : 'N/A',
+                    tipoExamen: r.examen ? r.examen.tipo : 'N/A'
+                };
+            });
+
+            res.render('cursos/resultados', { 
+                curso,      
+                cursoId, 
+                resultados: resultadosFinales, 
+                examenes 
+            });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error al obtener los resultados');
+        }
     }
+
 };

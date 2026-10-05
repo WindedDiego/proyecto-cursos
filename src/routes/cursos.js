@@ -13,5 +13,6 @@ router.get('/:id', courseAccessMiddleware, CursoController.detalle);
 router.get('/:id/editar', roleMiddleware(['profesor', 'administrador']), courseAccessMiddleware, CursoController.editarForm);
 router.post('/:id/editar', roleMiddleware(['profesor', 'administrador']), courseAccessMiddleware, CursoController.editar);
 router.post('/:id/eliminar', roleMiddleware(['profesor', 'administrador']), courseAccessMiddleware, CursoController.eliminar);
+router.get('/:id/resultados', roleMiddleware(['profesor', 'administrador']), courseAccessMiddleware, CursoController.resultados);
 
 module.exports = router;
