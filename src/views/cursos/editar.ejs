@@ -1,22 +1,42 @@
-<h1>Editar curso</h1>
-
-<form action="/cursos/<%= curso.id %>/editar" method="POST">
-  <label>Título</label>
-  <input type="text" name="titulo" value="<%= curso.titulo %>" required>
-
-  <label>Descripción</label>
-  <textarea name="descripcion" required><%= curso.descripcion %></textarea>
-
-  <% if (usuario.rol === 'administrador') { %>
-    <label>Profesor responsable</label>
-    <select name="profesor_id" required>
-      <% profesores.forEach(profesor => { %>
-        <option value="<%= profesor.id %>" <%= Number(curso.profesor_id) === Number(profesor.id) ? 'selected' : '' %>><%= profesor.nombre %> (<%= profesor.email %>)</option>
-      <% }) %>
-    </select>
-  <% } %>
-
-  <button type="submit">Guardar cambios</button>
-</form>
-
-<a href="/cursos/<%= curso.id %>">Volver</a>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar curso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-beige">
+    <div class="container py-5" style="max-width: 700px;">
+        <header class="header-seccion mb-4">
+            <h1 class="mb-0">Editar curso</h1>
+        </header>
+        <main class="tarjeta-contenido">
+            <form action="/cursos/<%= curso.id %>/editar" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Título</label>
+                    <input type="text" name="titulo" class="form-control bg-light" value="<%= curso.titulo %>" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción</label>
+                    <textarea name="descripcion" class="form-control bg-light" rows="4" required><%= curso.descripcion %></textarea>
+                </div>
+                <% if (usuario.rol === 'administrador') { %>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Profesor responsable</label>
+                        <select name="profesor_id" class="form-select bg-light" required>
+                            <% profesores.forEach(profesor => { %>
+                                <option value="<%= profesor.id %>" <%= Number(curso.profesor_id) === Number(profesor.id) ? 'selected' : '' %>><%= profesor.nombre %> (<%= profesor.email %>)</option>
+                            <% }) %>
+                        </select>
+                    </div>
+                <% } %>
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primario w-100">Guardar cambios</button>
+                    <a href="/cursos/<%= curso.id %>" class="btn btn-secundario w-100 text-center">Cancelar</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,57 +1,111 @@
+<!-- ==========================================================================
+     Archivo: src/views/cursos/detalle.ejs
+     ========================================================================== -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title><%= curso.titulo %></title>
+    <title><%= curso.titulo %> - Plataforma Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1><%= curso.titulo %></h1>
-    <p class="lead"><%= curso.descripcion %></p>
-
-    <div class="mb-4">
-        <a href="/cursos/<%= curso.id %>/contenidos" class="btn btn-primary me-2">Contenidos</a>
-        <a href="/cursos/<%= curso.id %>/foros" class="btn btn-secondary me-2">Foros del curso</a>
-        <a href="/cursos/<%= curso.id %>/tareas" class="btn btn-success me-2">Tareas del curso</a>
-        <a href="/cursos/<%= curso.id %>/examenes" class="btn btn-warning me-2">Exámenes del curso</a>
+<body>
+    <div class="container">
         
-        <!-- Botón Editar exclusivo para profesor -->
-        <div id="seccion-editar-curso" class="d-inline-block d-none me-2">
-            <a href="/cursos/<%= curso.id %>/editar" class="btn btn-outline-dark">Editar curso</a>
-        </div>
+        <!-- CABECERA DEL CURSO -->
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4">
+            <div>
+                <div class="mb-3">
+                    <span class="badge-id">Curso ID: <%= curso.id %></span>
+                </div>
+                <h1 class="text-verde-primario"><%= curso.titulo %></h1>
+                <p class="text-muted fs-5 mt-2 mb-0" style="max-width: 600px; line-height: 1.6;"><%= curso.descripcion %></p>
+            </div>
+            
+            <!-- Acciones de Profesor -->
+            <div id="seccion-acciones-profesor" class="d-none d-flex flex-wrap gap-2 flex-shrink-0 mt-3 mt-md-0">
+                <a href="/cursos/<%= curso.id %>/editar" class="btn btn-secundario">
+                    <span class="me-1">✏️</span> Editar curso
+                </a>
+                
+                <form action="/cursos/<%= curso.id %>/eliminar" method="POST" onsubmit="return confirm('⚠️ ¿Estás seguro de eliminar este curso por completo?');" class="m-0">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <span class="me-1">🗑️</span> Eliminar
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- MÓDULOS DEL CURSO EN GRID -->
+        <main>
+            <div class="row g-4 mb-5">
+                
+                <!-- Contenidos -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="modulo-card">
+                        <div class="modulo-icon-wrapper">📚</div>
+                        <h3 class="h4 text-verde-primario mb-3">Contenidos</h3>
+                        <p class="text-muted small mb-4 flex-grow-1">Material de estudio, PDFs, vídeos explicativos y enlaces.</p>
+                        <a href="/cursos/<%= curso.id %>/contenidos" class="btn btn-primario w-100 rounded-pill">Ver Contenidos</a>
+                    </div>
+                </div>
+
+                <!-- Tareas -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="modulo-card">
+                        <div class="modulo-icon-wrapper">📝</div>
+                        <h3 class="h4 text-verde-primario mb-3">Tareas</h3>
+                        <p class="text-muted small mb-4 flex-grow-1">Entregas de trabajos, proyectos del curso y correcciones.</p>
+                        <a href="/cursos/<%= curso.id %>/tareas" class="btn btn-primario w-100 rounded-pill">Ver Tareas</a>
+                    </div>
+                </div>
+
+                <!-- Exámenes -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="modulo-card">
+                        <div class="modulo-icon-wrapper">⭐</div>
+                        <h3 class="h4 text-verde-primario mb-3">Exámenes</h3>
+                        <p class="text-muted small mb-4 flex-grow-1">Pruebas de evaluación continua, test y desarrollo.</p>
+                        <a href="/cursos/<%= curso.id %>/examenes" class="btn btn-primario w-100 rounded-pill">Ver Exámenes</a>
+                    </div>
+                </div>
+
+                <!-- Foros -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="modulo-card">
+                        <div class="modulo-icon-wrapper">💬</div>
+                        <h3 class="h4 text-verde-primario mb-3">Foros</h3>
+                        <p class="text-muted small mb-4 flex-grow-1">Debates, resolución de dudas y comunicación con la clase.</p>
+                        <a href="/cursos/<%= curso.id %>/foros" class="btn btn-primario w-100 rounded-pill">Ir a Foros</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- NAVEGACIÓN INFERIOR -->
+            <div class="mt-4 pt-3 border-top" style="border-color: var(--borde-suave) !important;">
+                <a href="/cursos" class="btn-volver">
+                    <span class="fs-5">&larr;</span> Volver a mis cursos
+                </a>
+            </div>
+        </main>
     </div>
 
-    <!-- Formulario Eliminar exclusivo para profesor -->
-    <div id="seccion-eliminar-curso" class="d-none">
-        <form action="/cursos/<%= curso.id %>/eliminar" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este curso?');">
-            <button type="submit" class="btn btn-danger btn-sm">Eliminar curso</button>
-        </form>
-    </div>
-
-    <br>
-    <a href="/cursos" class="btn btn-link px-0">← Volver al listado general de cursos</a>
-
+    <!-- CONTROL DE ROL -->
     <script>
-        function obtenerRolDeToken() {
+        document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem('token');
-            if (!token) return null;
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload).rol;
-            } catch (e) {
-                return null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                    if (payload.rol === 'profesor' || payload.rol === 'administrador') {
+                        document.getElementById('seccion-acciones-profesor').classList.remove('d-none');
+                    }
+                } catch (e) {
+                    console.error("Error decodificando token", e);
+                }
             }
-        }
-
-        const rol = obtenerRolDeToken();
-        if (rol === 'profesor' || rol === 'administrador') {
-            document.getElementById('seccion-editar-curso').classList.remove('d-none');
-            document.getElementById('seccion-eliminar-curso').classList.remove('d-none');
-        }
+        });
     </script>
 </body>
 </html>

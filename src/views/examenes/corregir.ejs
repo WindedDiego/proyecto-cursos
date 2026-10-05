@@ -2,52 +2,57 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Corregir Exámenes de Desarrollo</title>
+    <title>Corregir Desarrollo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1>Corrección de Exámenes de Desarrollo</h1>
-    <a href="/cursos/<%= cursoId %>/examenes/<%= examenId %>" class="btn btn-secondary mb-3">← Volver al detalle del examen</a>
+<body class="bg-beige">
+    <div class="container mt-4">
+        <header class="header-seccion">
+            <h1>Corrección de Exámenes de Desarrollo</h1>
+            <div class="barra-botones mt-3">
+                <a href="/cursos/<%= cursoId %>/examenes/<%= examenId %>" class="btn btn-secundario">← Volver al examen</a>
+            </div>
+        </header>
 
-    <% if (entregas.length === 0) { %>
-        <div class="alert alert-info">No hay respuestas de desarrollo enviadas por los alumnos para este examen.</div>
-    <% } else { %>
-        <div class="list-group">
-            <% entregas.forEach(entrega => { %>
-                <div class="list-group-item mb-3 shadow-sm p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <p class="mb-1"><strong>Alumno:</strong> <%= entrega.alumno ? entrega.alumno.nombre : 'Desconocido' %> (<%= entrega.alumno ? entrega.alumno.email : '' %>)</p>
-                        
-                        <!-- AQUÍ SE VE AL PROFESOR SI YA ESTÁ GUARDADA Y QUÉ NOTA TIENE -->
-                        <% if (entrega.calificacion !== null && entrega.calificacion !== undefined) { %>
-                            <span class="badge bg-success">Nota guardada: <%= entrega.calificacion %></span>
-                        <% } else { %>
-                            <span class="badge bg-warning text-dark">Pendiente de calificar</span>
-                        <% } %>
+        <% if (entregas.length === 0) { %>
+            <div class="tarjeta-contenido">
+                <p class="text-muted mb-0">No hay respuestas de desarrollo enviadas por los alumnos para este examen.</p>
+            </div>
+        <% } else { %>
+            <div class="row g-4">
+                <% entregas.forEach(entrega => { %>
+                    <div class="col-12">
+                        <div class="tarjeta-contenido mb-0 border-start border-4" style="border-color: <%= entrega.calificacion !== null ? 'var(--verde-secundario)' : '#ffc107' %> !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                                <span class="fw-bold fs-5 text-verde-primario"><%= entrega.alumno ? entrega.alumno.nombre : 'Desconocido' %></span>
+                                <% if (entrega.calificacion !== null && entrega.calificacion !== undefined) { %>
+                                    <span class="badge bg-success fs-6">Nota: <%= entrega.calificacion %></span>
+                                <% } else { %>
+                                    <span class="badge bg-warning text-dark fs-6">Pendiente</span>
+                                <% } %>
+                            </div>
+                            <p class="mb-2 fw-bold text-muted">Pregunta: <%= entrega.pregunta ? entrega.pregunta.enunciado : '' %></p>
+                            <div class="bg-light p-3 rounded mb-4 border text-muted" style="white-space: pre-wrap;"><%= entrega.respuesta_texto %></div>
 
+                            <form action="/cursos/<%= cursoId %>/examenes/<%= examenId %>/corregir/<%= entrega.id %>" method="POST" class="row g-3 align-items-end">
+                                <div class="col-md-2">
+                                    <label class="form-label fw-bold small">Calificación</label>
+                                    <input type="number" step="0.1" name="calificacion" class="form-control" value="<%= entrega.calificacion !== null ? entrega.calificacion : '' %>" required>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold small">Feedback (Opcional)</label>
+                                    <input type="text" name="feedback" class="form-control" value="<%= entrega.feedback || '' %>">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primario w-100">Guardar Nota</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <p class="mt-2"><strong>Pregunta:</strong> <%= entrega.pregunta ? entrega.pregunta.enunciado : '' %></p>
-                    <div class="bg-light p-3 rounded mb-3 border">
-                        <strong>Respuesta del alumno:</strong>
-                        <p class="mb-0 mt-1" style="white-space: pre-wrap;"><%= entrega.respuesta_texto %></p>
-                    </div>
-
-                    <form action="/cursos/<%= cursoId %>/examenes/<%= examenId %>/corregir/<%= entrega.id %>" method="POST" class="row g-3 align-items-end">
-                        <div class="col-md-3">
-                            <label class="form-label">Calificación (Nota)</label>
-                            <input type="number" step="0.1" name="calificacion" class="form-control" value="<%= entrega.calificacion !== null && entrega.calificacion !== undefined ? entrega.calificacion : '' %>" placeholder="Ej: 8.5" required>
-                        </div>
-                        <div class="col-md-7">
-                            <label class="form-label">Feedback / Comentarios</label>
-                            <input type="text" name="feedback" class="form-control" value="<%= entrega.feedback || '' %>" placeholder="Comentarios opcionales para el alumno...">
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100">Guardar Nota</button>
-                        </div>
-                    </form>
-                </div>
-            <% }) %>
-        </div>
-    <% } %>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
 </body>
 </html>

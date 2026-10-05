@@ -1,94 +1,136 @@
+<!-- ==========================================================================
+     Archivo: src/views/examenes/detalle.ejs (Con variables seguras)
+     ========================================================================== -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Detalle del Examen</title>
+    <title>Detalle del Examen - Plataforma Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1>Examen: <%= examen.tipo %></h1>
-    <a href="/cursos/<%= cursoId %>/examenes" class="btn btn-secondary mb-3">← Volver a exámenes</a>
-
-    <div class="mb-4">
-        <!-- Botón de añadir pregunta exclusivo para profesor -->
-        <div id="btn-crear-pregunta" class="d-inline-block d-none me-2">
-            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas" class="btn btn-primary">➕ Añadir pregunta (Test / Desarrollo)</a>
-        </div>
-        <!-- Botón de corregir exámenes de desarrollo -->
-        <div id="btn-corregir-desarrollo" class="d-inline-block d-none me-2">
-            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/corregir" class="btn btn-dark">📝 Corregir desarrollo</a>
-        </div>
-        <!-- Alumno hace el examen -->
-        <div id="btn-alumno-resolver" class="d-inline-block d-none">
-            <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/resolver" class="btn btn-success">✏️ Hacer este examen</a>
-        </div>
-    </div>
-
-    <h3>Preguntas del Examen</h3>
-    
-    <% const listaPreguntas = examen.Preguntas || examen.Pregunta || []; %>
-
-    <% if (listaPreguntas.length === 0) { %>
-        <p class="text-muted">Este examen aún no tiene preguntas añadidas.</p>
-    <% } else { %>
-        <div class="list-group">
-            <% listaPreguntas.forEach((pregunta, index) => { %>
-                <div class="list-group-item mb-3 shadow-sm p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5>Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
-                        <span class="badge bg-<%= pregunta.tipo === 'desarrollo' ? 'info' : 'secondary' %>">
-                            <%= pregunta.tipo === 'desarrollo' ? 'Desarrollo (Abierta)' : 'Opción Múltiple' %>
-                        </span>
-                    </div>
-
-                    <% if (pregunta.tipo === 'multiple') { %>
-                        <ul class="mb-3 mt-2">
-                            <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
-                            <% listaRespuestas.forEach(resp => { %>
-                                <li class="<%= puedeVerCorrectas && resp.correcta ? 'text-success fw-bold' : '' %>">
-                                    <%= resp.texto %> <%= puedeVerCorrectas && resp.correcta ? '(Correcta)' : '' %>
-                                </li>
-                            <% }) %>
-                        </ul>
-                    <% } else { %>
-                        <p class="text-muted small mt-2 mb-3"><i>Pregunta abierta de respuesta escrita por el alumno.</i></p>
-                    <% } %>
-
-                    <!-- Botón de modificar pregunta exclusivo para profesor -->
-                    <div class="btn-modificar-pregunta d-none">
-                        <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas/<%= pregunta.id %>/editar" class="btn btn-sm btn-outline-dark">Modificar pregunta</a>
-                    </div>
+<body>
+    <div class="container">
+        
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <span class="badge rounded-pill text-uppercase mb-2" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">Evaluación</span>
+                <h1 class="text-verde-primario">Examen: <%= examen.tipo %></h1>
+                <p class="lead mb-0">Gestión de preguntas y calificaciones</p>
+            </div>
+            
+            <div class="d-flex flex-wrap gap-2">
+                <div id="btn-crear-pregunta" class="d-none">
+                    <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas" class="btn btn-primario">➕ Añadir pregunta</a>
                 </div>
-            <% }) %>
-        </div>
-    <% } %>
+                <div id="btn-corregir-desarrollo" class="d-none">
+                    <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/corregir" class="btn btn-secundario" style="border-color: var(--verde-primario); color: var(--verde-primario);">📝 Corregir desarrollo</a>
+                </div>
+                <div id="btn-alumno-resolver" class="d-none">
+                    <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/resolver" class="btn btn-primario">✏️ Hacer este examen</a>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="mb-4">
+                <a href="/cursos/<%= cursoId %>/examenes" class="btn btn-secundario">← Volver a exámenes</a>
+            </div>
+
+            <!-- SECCIÓN DE CALIFICACIONES ALUMNO (Protegida contra errores) -->
+            <div id="seccion-notas-alumno" class="d-none tarjeta-contenido mb-4 border-start border-4" style="border-color: var(--verde-primario) !important;">
+                <h3 class="h4 mb-3 text-verde-primario">📊 Mis Calificaciones en este Examen</h3>
+                
+                <% if (typeof resultadoTest !== 'undefined' && resultadoTest) { %>
+                    <p class="mb-2 fs-5"><strong>Resultado Tipo Test:</strong> <span class="badge bg-success"><%= resultadoTest.aciertos %> / <%= resultadoTest.total %> aciertos</span></p>
+                <% } %>
+
+                <% if (typeof misRespuestasDesarrollo !== 'undefined' && misRespuestasDesarrollo && misRespuestasDesarrollo.length > 0) { %>
+                    <h5 class="mt-4 text-muted">Preguntas de Desarrollo:</h5>
+                    <ul class="list-group mt-2">
+                        <% misRespuestasDesarrollo.forEach(resp => { %>
+                            <li class="list-group-item bg-light border-0 mb-2 rounded shadow-sm p-3">
+                                <p class="mb-1 text-muted small"><strong>Tu respuesta:</strong> <%= resp.respuesta_texto %></p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span>
+                                        <strong>Nota del profesor:</strong> 
+                                        <% if (resp.calificacion !== null && resp.calificacion !== undefined) { %>
+                                            <span class="text-success fw-bold fs-5"><%= resp.calificacion %></span>
+                                        <% } else { %>
+                                            <span class="badge bg-warning text-dark">Pendiente de corrección</span>
+                                        <% } %>
+                                    </span>
+                                    <% if (resp.feedback) { %>
+                                        <span class="text-muted small"><strong>Feedback:</strong> <em><%= resp.feedback %></em></span>
+                                    <% } %>
+                                </div>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else if (typeof resultadoTest === 'undefined' || !resultadoTest) { %>
+                    <p class="text-muted mb-0">Aún no has realizado este examen o no hay resultados registrados.</p>
+                <% } %>
+            </div>
+
+            <h3 class="h4 mb-4 text-verde-primario">Preguntas del Examen</h3>
+            <% const listaPreguntas = examen.Preguntas || examen.Pregunta || []; %>
+
+            <% if (listaPreguntas.length === 0) { %>
+                <div class="empty-state">
+                    <div class="icon">❓</div>
+                    <h4 class="text-verde-primario fw-bold mb-2">Examen vacío</h4>
+                    <p class="text-muted mb-0">Este examen todavía no tiene preguntas añadidas.</p>
+                </div>
+            <% } else { %>
+                <div class="d-flex flex-column gap-3">
+                    <% listaPreguntas.forEach((pregunta, index) => { %>
+                        <div class="tarjeta-contenido mb-0 p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="fw-bold text-dark mb-0">Pregunta <%= index + 1 %>: <%= pregunta.enunciado %></h5>
+                                <span class="badge rounded-pill text-uppercase" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">
+                                    <%= pregunta.tipo === 'desarrollo' ? 'Desarrollo' : 'Tipo Test' %>
+                                </span>
+                            </div>
+
+                            <% if (pregunta.tipo === 'multiple') { %>
+                                <ul class="list-group list-group-flush mt-3">
+                                    <% const listaRespuestas = pregunta.Respuestas || pregunta.Respuesta || []; %>
+                                    <% listaRespuestas.forEach(resp => { %>
+                                        <li class="list-group-item bg-transparent <%= typeof puedeVerCorrectas !== 'undefined' && puedeVerCorrectas && resp.correcta ? 'text-success fw-bold' : '' %>">
+                                            <%= resp.texto %> <%= typeof puedeVerCorrectas !== 'undefined' && puedeVerCorrectas && resp.correcta ? '✓ (Correcta)' : '' %>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                            <% } else { %>
+                                <p class="text-muted small mt-2 mb-0"><i>[Pregunta de respuesta abierta / desarrollo]</i></p>
+                            <% } %>
+
+                            <div class="btn-modificar-pregunta d-none mt-3 text-end pt-2 border-top">
+                                <a href="/cursos/<%= cursoId %>/examenes/<%= examen.id %>/preguntas/<%= pregunta.id %>/editar" class="btn btn-sm btn-secundario">Editar pregunta</a>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </main>
+    </div>
 
     <script>
         function obtenerRolDeToken() {
             const token = localStorage.getItem('token');
             if (!token) return null;
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload).rol;
-            } catch (e) {
-                return null;
-            }
+            try { 
+                return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))).rol; 
+            } catch (e) { return null; }
         }
-
         const rol = obtenerRolDeToken();
         if (rol === 'profesor' || rol === 'administrador') {
-            const btnCrear = document.getElementById('btn-crear-pregunta');
-            if (btnCrear) btnCrear.classList.remove('d-none');
-            const btnCorregir = document.getElementById('btn-corregir-desarrollo');
-            if (btnCorregir) btnCorregir.classList.remove('d-none');
+            const btnCrear = document.getElementById('btn-crear-pregunta'); if (btnCrear) btnCrear.classList.remove('d-none');
+            const btnCorregir = document.getElementById('btn-corregir-desarrollo'); if (btnCorregir) btnCorregir.classList.remove('d-none');
             document.querySelectorAll('.btn-modificar-pregunta').forEach(el => el.classList.remove('d-none'));
         } else if (rol === 'alumno') {
-            const btnResolver = document.getElementById('btn-alumno-resolver');
-            if (btnResolver) btnResolver.classList.remove('d-none');
+            const btnResolver = document.getElementById('btn-alumno-resolver'); if (btnResolver) btnResolver.classList.remove('d-none');
+            const seccionNotas = document.getElementById('seccion-notas-alumno'); if (seccionNotas) seccionNotas.classList.remove('d-none');
         }
     </script>
 </body>

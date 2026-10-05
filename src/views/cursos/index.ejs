@@ -1,62 +1,128 @@
+<!-- ==========================================================================
+     Archivo: src/views/cursos/index.ejs (Con Navbar superior de acceso a paneles)
+     ========================================================================== -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Listado de cursos</title>
+    <title>Mis Cursos - Plataforma Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
+<body>
+    <div class="container">
+        
+        <!-- NAVBAR SUPERIOR FLOTANTE PARA PANELES Y SESIÓN -->
+        <nav class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded-4 shadow-sm border" style="border-color: var(--borde-suave) !important;">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fs-4">🎓</span>
+                <span class="fw-bold text-verde-primario" style="font-family: 'Montserrat', sans-serif;">Aula Virtual</span>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <!-- Botón dinámico que lleva al panel según el rol -->
+                <a id="btn-enlace-panel" href="#" class="btn btn-secundario btn-sm d-none">
+                    📊 Mi Panel
+                </a>
+                
+                <!-- Botón de Cerrar Sesión -->
+                <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm px-3" style="border-radius: 10px;">
+                    Cerrar sesión
+                </button>
+            </div>
+        </nav>
 
-    <!-- Contenedor dinámico donde aparecerá el botón del panel según el rol -->
-    <div id="panel-container" class="mb-3"></div>
+        <!-- CABECERA PRINCIPAL -->
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <h1 class="text-verde-primario">Mis Cursos</h1>
+                <p class="lead mb-0">Explora tus asignaturas y material académico.</p>
+            </div>
+            
+            <div id="acciones-administrador" class="d-none">
+                <a href="/cursos/crear" class="btn btn-primario shadow-sm">
+                    <span class="fs-5 me-1">+</span> Nuevo Curso
+                </a>
+            </div>
+        </header>
 
-    <h1>Listado de cursos</h1>
+        <!-- GRID DE CURSOS -->
+        <main>
+            <% if (cursos && cursos.length > 0) { %>
+                <div class="row g-4">
+                    <% cursos.forEach(curso => { %>
+                        <div class="col-md-6 col-lg-4">
+                            <a href="/cursos/<%= curso.id %>" class="text-decoration-none">
+                                <div class="tarjeta-contenido d-flex flex-column justify-content-between h-100 position-relative overflow-hidden">
+                                    
+                                    <div class="position-absolute top-0 start-0 w-100" style="height: 4px; background: var(--verde-secundario);"></div>
 
-    <ul class="list-group mb-3">
-      <% cursos.forEach(curso => { %>
-        <li class="list-group-item">
-          <a href="/cursos/<%= curso.id %>" class="text-decoration-none"><%= curso.titulo %></a>
-        </li>
-      <% }) %>
-    </ul>
-
-    <!-- Botón de crear curso exclusivo para profesor -->
-    <div id="seccion-crear-curso" class="d-none">
-        <a href="/cursos/crear" class="btn btn-primary">Crear nuevo curso</a>
+                                    <div class="mb-4 pt-2">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <span class="badge rounded-pill fw-bold" style="background-color: var(--verde-claro); color: var(--verde-oscuro); border: 1px solid var(--verde-secundario);">
+                                                ID: <%= curso.id %>
+                                            </span>
+                                        </div>
+                                        <h3 class="h4 text-verde-primario fw-bold mb-2"><%= curso.titulo %></h3>
+                                        <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                            <%= curso.descripcion %>
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                        <span class="text-verde-primario fw-bold small">Entrar al curso &rarr;</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="icon">📂</div>
+                    <h3 class="text-verde-primario fw-bold mb-2">Aún no hay cursos</h3>
+                    <p class="text-muted">No estás matriculado en ninguna asignatura en este momento.</p>
+                </div>
+            <% } %>
+        </main>
     </div>
 
+    <!-- SCRIPT DE ROLES Y NAVEGACIÓN -->
     <script>
-        // Función robusta para leer el rol desde el token JWT en localStorage
-        function obtenerRolDeToken() {
+        document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem('token');
-            if (!token) return null;
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload).rol;
-            } catch (e) {
-                console.error("Error al leer el token:", e);
-                return null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                    
+                    const btnPanel = document.getElementById('btn-enlace-panel');
+                    
+                    // Asignar la ruta del panel según el rol del usuario conectado
+                    if (payload.rol === 'alumno') {
+                        btnPanel.href = '/paneles/alumno';
+                        btnPanel.classList.remove('d-none');
+                    } else if (payload.rol === 'profesor') {
+                        btnPanel.href = '/paneles/profesor';
+                        btnPanel.classList.remove('d-none');
+                    } else if (payload.rol === 'observador') {
+                        btnPanel.href = '/paneles/observador';
+                        btnPanel.classList.remove('d-none');
+                    } else if (payload.rol === 'administrador') {
+                        // Si es admin, mostramos el botón de crear curso
+                        document.getElementById('acciones-administrador').classList.remove('d-none');
+                        btnPanel.href = '/paneles/observador'; // O el panel que prefieras para admin
+                        btnPanel.classList.remove('d-none');
+                    }
+                } catch (e) {
+                    console.error("Error leyendo la sesión del token", e);
+                }
             }
-        }
+        });
 
-        // Al cargar la página, comprobamos el rol y pintamos los elementos correspondientes
-        const rolUsuario = obtenerRolDeToken();
-        const contenedor = document.getElementById('panel-container');
-
-        if (rolUsuario === 'profesor') {
-            contenedor.innerHTML = '<a href="/paneles/profesor" class="btn btn-warning">Ir a mi Panel de Profesor 👨‍🏫</a>';
-            document.getElementById('seccion-crear-curso').classList.remove('d-none');
-        } else if (rolUsuario === 'administrador') {
-            contenedor.innerHTML = '<a href="/paneles/administrador" class="btn btn-dark">Administrar plataforma</a>';
-            document.getElementById('seccion-crear-curso').classList.remove('d-none');
-        } else if (rolUsuario === 'observador') {
-            contenedor.innerHTML = '<a href="/paneles/observador" class="btn btn-info">Ir a Informes / Observador 🕵️</a>';
-        } else if (rolUsuario === 'alumno') {
-            contenedor.innerHTML = '<a href="/paneles/alumno" class="btn btn-success">Ver mi Panel de Alumno 👨‍🎓</a>';
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            document.cookie = 'token=; Max-Age=0; path=/;';
+            window.location.href = '/auth/login';
         }
     </script>
 </body>

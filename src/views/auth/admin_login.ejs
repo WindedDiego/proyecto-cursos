@@ -2,40 +2,36 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear administrador inicial</title>
+    <title>Crear Administrador - Plataforma</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-light">
-    <main class="container mt-5">
+<body class="bg-beige d-flex align-items-center" style="min-height: 100vh;">
+    <main class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
-                <div class="card shadow-sm">
-                    <div class="card-body p-4">
-                        <h1 class="h3 text-center mb-3">Configuración inicial</h1>
-                        <p class="text-muted">Crea la cuenta administradora inicial del proyecto.</p>
-
-                        <% if (mensaje) { %>
-                            <div class="alert alert-danger" role="alert"><%= mensaje %></div>
-                        <% } %>
-
-                        <form action="/auth/admin_login" method="POST">
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input id="nombre" name="nombre" class="form-control" maxlength="100" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Correo electrónico</label>
-                                <input id="email" name="email" type="email" class="form-control" maxlength="100" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="contrasena" class="form-label">Contraseña</label>
-                                <input id="contrasena" name="contrasena" type="password" class="form-control" minlength="12" autocomplete="new-password" required>
-                                <div class="form-text">Usa al menos 12 caracteres.</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Crear administrador</button>
-                        </form>
-                    </div>
+                <div class="tarjeta-contenido py-5">
+                    <h1 class="h3 text-center mb-3 text-verde-primario" style="font-weight: 800;">Configuración Inicial</h1>
+                    <p class="text-muted text-center mb-4">Crea la cuenta administradora base.</p>
+                    <% if (mensaje) { %>
+                        <div class="alert alert-danger" role="alert"><%= mensaje %></div>
+                    <% } %>
+                    <form action="/auth/admin_login" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nombre</label>
+                            <input name="nombre" class="form-control bg-light" maxlength="100" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Correo electrónico</label>
+                            <input name="email" type="email" class="form-control bg-light" maxlength="100" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Contraseña</label>
+                            <input name="contrasena" type="password" class="form-control bg-light" minlength="12" autocomplete="new-password" required>
+                            <div class="form-text">Usa al menos 12 caracteres.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primario w-100 py-2">Crear administrador</button>
+                    </form>
                 </div>
             </div>
         </div>

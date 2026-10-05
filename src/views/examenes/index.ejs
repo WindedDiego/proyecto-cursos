@@ -1,99 +1,91 @@
+<!-- ==========================================================================
+     Archivo: src/views/examenes/index.ejs
+     ========================================================================== -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Exámenes del Curso</title>
+    <title>Exámenes - <%= curso.titulo %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1>Exámenes del curso: <%= curso.nombre %></h1>
-    
-    <div class="mb-4">
-        <!-- Botón exclusivo para Profesor / Admin -->
-        <div id="btn-crear-examen" class="d-inline-block d-none me-2">
-            <a href="/cursos/<%= curso.id %>/examenes/crear" class="btn btn-primary">Crear nuevo examen</a>
-        </div>
-    </div>
+<body>
+    <div class="container">
+        
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <h1 class="text-verde-primario">Evaluaciones</h1>
+                <p class="lead mb-0"><%= curso.titulo %></p>
+            </div>
+            <div id="btn-crear-examen-container" class="d-none">
+                <a href="/cursos/<%= curso.id %>/examenes/crear" class="btn btn-primario shadow-sm">
+                    <span class="fs-5 me-1">+</span> Programar Examen
+                </a>
+            </div>
+        </header>
 
-    <% if (examenes.length === 0) { %>
-        <p class="text-muted">No hay exámenes disponibles en este curso.</p>
-    <% } else { %>
-        <div class="list-group">
-            <% examenes.forEach(examen => { %>
-                <div class="list-group-item d-flex justify-content-between align-items-center p-3 mb-2 shadow-sm">
-                    <div>
-                        <h5 class="mb-1"><%= examen.tipo %></h5>
-                        
-                        <!-- VISUALIZACIÓN DE NOTAS DIRECTAMENTE PARA EL ALUMNO -->
-                        <div class="info-notas-alumno d-none mt-2">
-                            <% 
-                                const resTest = (typeof misResultadosTest !== 'undefined') ? misResultadosTest[examen.id] : null;
-                                const notasDes = (typeof misNotasDesarrollo !== 'undefined') ? misNotasDesarrollo[examen.id] : null;
-                            %>
-
-                            <% if (resTest) { %>
-                                <span class="badge bg-primary me-2">Test: <%= resTest.aciertos %> / <%= resTest.total %> aciertos</span>
-                            <% } %>
-
-                            <% if (notasDes && notasDes.length > 0) { %>
-                                <% notasDes.forEach((nd, idx) => { %>
-                                    <span class="badge bg-<%= nd.calificacion !== null ? 'success' : 'warning text-dark' %> me-1">
-                                        Desarrollo [P<%= idx+1 %>]: <%= nd.calificacion !== null ? nd.calificacion + ' pts' : 'Pendiente' %>
-                                    </span>
-                                <% }) %>
-                            <% } %>
-
-                            <% if (!resTest && (!notasDes || notasDes.length === 0)) { %>
-                                <span class="text-muted small">Sin realizar / sin calificar</span>
-                            <% } %>
+        <main>
+            <% if (examenes && examenes.length > 0) { %>
+                <div class="d-flex flex-column">
+                    <% examenes.forEach(examen => { %>
+                        <div class="tarjeta-lista flex-column flex-md-row">
+                            <div class="icon-box">⭐</div>
+                            
+                            <div class="flex-grow-1 text-center text-md-start">
+                                <span class="badge rounded-pill text-uppercase mb-2" style="background-color: rgba(45, 106, 79, 0.1); color: var(--verde-primario); font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    Evaluación Activa
+                                </span>
+                                <h4 class="fw-bold mb-1 text-dark"><%= examen.tipo %></h4>
+                                <span class="text-muted small">ID Examen: <%= examen.id %></span>
+                            </div>
+                            
+                            <!-- Botones Flexibles -->
+                            <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2 mt-3 mt-md-0">
+                                
+                                <div class="acciones-profesor d-none d-flex flex-wrap gap-2">
+                                    <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>/preguntas" class="btn btn-secundario">
+                                        ⚙️ Editar
+                                    </a>
+                                    <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>/corregir" class="btn btn-secundario" style="border-color: var(--verde-primario); color: var(--verde-primario);">
+                                        📝 Corregir
+                                    </a>
+                                </div>
+                                
+                                <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>" class="btn btn-primario">
+                                    Acceder al examen &rarr;
+                                </a>
+                            </div>
+                            
                         </div>
-                    </div>
-
-                    <div>
-                        <!-- Botón para Profesor / Admin -->
-                        <div class="acciones-profesor d-none d-inline-block">
-                            <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>" class="btn btn-warning btn-sm">⚙️ Modificar / Añadir preguntas</a>
-                            <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>/corregir" class="btn btn-dark btn-sm">📝 Corregir desarrollo</a>
-                        </div>
-                        <!-- Botón para Alumno -->
-                        <div class="acciones-alumno d-none d-inline-block">
-                            <a href="/cursos/<%= curso.id %>/examenes/<%= examen.id %>" class="btn btn-success btn-sm">✏️ Ver / Hacer el examen</a>
-                        </div>
-                    </div>
+                    <% }) %>
                 </div>
-            <% }) %>
-        </div>
-    <% } %>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="icon">📊</div>
+                    <h3 class="text-verde-primario fw-bold mb-2">Sin evaluaciones pendientes</h3>
+                    <p class="text-muted">Aún no se han publicado exámenes para esta asignatura.</p>
+                </div>
+            <% } %>
 
-    <div class="mt-4">
-        <a href="/cursos/<%= curso.id %>" class="btn btn-secondary">← Volver al curso</a>
+            <a href="/cursos/<%= curso.id %>" class="btn-volver">
+                <span class="fs-5">&larr;</span> Volver al resumen del curso
+            </a>
+        </main>
     </div>
 
     <script>
-        function obtenerRolDeToken() {
+        document.addEventListener("DOMContentLoaded", () => {
             const token = localStorage.getItem('token');
-            if (!token) return null;
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload).rol;
-            } catch (e) {
-                return null;
+            if (token) {
+                try {
+                    const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                    if (payload.rol === 'profesor' || payload.rol === 'administrador') {
+                        document.getElementById('btn-crear-examen-container').classList.remove('d-none');
+                        document.querySelectorAll('.acciones-profesor').forEach(el => el.classList.remove('d-none'));
+                    }
+                } catch (e) {}
             }
-        }
-
-        const rol = obtenerRolDeToken();
-        if (rol === 'profesor' || rol === 'administrador') {
-            const btnCrear = document.getElementById('btn-crear-examen');
-            if (btnCrear) btnCrear.classList.remove('d-none');
-            document.querySelectorAll('.acciones-profesor').forEach(el => el.classList.remove('d-none'));
-        } else if (rol === 'alumno') {
-            document.querySelectorAll('.acciones-alumno').forEach(el => el.classList.remove('d-none'));
-            document.querySelectorAll('.info-notas-alumno').forEach(el => el.classList.remove('d-none'));
-        }
+        });
     </script>
 </body>
 </html>

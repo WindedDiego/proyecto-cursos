@@ -2,41 +2,66 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Panel de Observador (Informes)</title>
+    <title>Panel de Observador - Plataforma Escolar</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="container mt-4">
-    <h1>Panel de Observador / Informes 🕵️</h1>
-    <p class="text-muted">Modo de sólo lectura (Administración)</p>
-    <hr>
-    
-    <h3>Fichas de Alumnos</h3>
-    <ul class="list-group mb-4">
-        <% alumnos.forEach(alumno => { %>
-            <li class="list-group-item">ID: <%= alumno.id %> | Nombre: <strong><%= alumno.nombre %></strong> | Email: <%= alumno.email %></li>
-        <% }) %>
-    </ul>
+<body>
+    <div class="container">
+        
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <span class="badge rounded-pill text-uppercase mb-2" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">Auditoría / Inspección</span>
+                <h1 class="text-verde-primario">Panel de Observador</h1>
+                <p class="lead mb-0">Modo de consulta y auditoría general del sistema.</p>
+            </div>
+            <div>
+                <a href="/cursos" class="btn btn-primario shadow-sm">Ver Cursos &rarr;</a>
+            </div>
+        </header>
 
-    <h3>Registro completo de horas de actividad</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Usuario</th>
-                <th>Recurso</th>
-                <th>Entrada</th>
-                <th>Salida</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% todasLasActividades.forEach(act => { %>
-                <tr>
-                    <td><%= act.usuario ? act.usuario.nombre : 'Anónimo' %></td>
-                    <td><%= act.recurso %></td>
-                    <td><%= act.hora_entrada %></td>
-                    <td><%= act.hora_salida || 'En curso' %></td>
-                </tr>
-            <% }) %>
-        </tbody>
-    </table>
+        <main>
+            <div class="tarjeta-contenido p-4 mb-4">
+                <h3 class="h4 text-verde-primario mb-4 pb-2 border-bottom">Alumnos Registrados</h3>
+                <div class="row g-3">
+                    <% alumnos.forEach(alumno => { %>
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 border rounded bg-light">
+                                <span class="badge bg-secondary mb-1">ID: <%= alumno.id %></span>
+                                <h5 class="mb-1 text-dark fw-bold"><%= alumno.nombre %></h5>
+                                <span class="text-muted small"><%= alumno.email %></span>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="tarjeta-contenido p-4">
+                <h3 class="h4 text-verde-primario mb-4 pb-2 border-bottom">Registro de Actividad Global</h3>
+                <div class="table-responsive">
+                    <table class="tabla-resultados w-100">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Endpoint / Recurso</th>
+                                <th>Entrada</th>
+                                <th class="text-end">Salida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% todasLasActividades.forEach(act => { %>
+                                <tr>
+                                    <td class="fw-bold"><%= act.usuario ? act.usuario.nombre : 'Anónimo' %></td>
+                                    <td><code><%= act.recurso %></code></td>
+                                    <td><%= new Date(act.hora_entrada).toLocaleString('es-ES') %></td>
+                                    <td class="text-end text-muted"><%= act.hora_salida ? new Date(act.hora_salida).toLocaleString('es-ES') : 'Activo...' %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 </html>
