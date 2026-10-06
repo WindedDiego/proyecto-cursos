@@ -19,6 +19,10 @@ const Contenido = sequelize.define('Contenido', {
     url_archivo: {
         type: DataTypes.STRING(255),
         allowNull: true
+    },
+    descripcion: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 }, {
     tableName: 'Contenidos',

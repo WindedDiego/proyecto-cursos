@@ -44,12 +44,13 @@ module.exports = {
     crear: async (req, res) => {
         try {
             const id_curso = req.params.id_curso;
-            const { tipo, url_archivo } = req.body;
+            const { tipo, url_archivo, descripcion } = req.body;
             
             await Contenido.create({
                 curso_id: id_curso,
                 tipo: tipo,
-                url_archivo: url_archivo || null
+                url_archivo: url_archivo || null,
+                descripcion: descripcion || null
             });
             
             res.redirect(`/cursos/${id_curso}/contenidos`);
@@ -64,6 +65,8 @@ module.exports = {
             const id_curso = req.params.id_curso;
             const tipo = String(req.body.tipo || '').trim();
             const url_archivo = String(req.body.url_archivo || '').trim();
+            const descripcion = String(req.body.descripcion || '').trim();
+            
             if (!tipo || tipo.length > 50) {
                 return res.status(400).send('El tipo de contenido es obligatorio y admite hasta 50 caracteres');
             }
@@ -73,7 +76,7 @@ module.exports = {
             });
             if (!contenido) return res.status(404).send('Contenido no encontrado');
 
-            await contenido.update({ tipo, url_archivo: url_archivo || null });
+            await contenido.update({ tipo, url_archivo: url_archivo || null, descripcion: descripcion || null });
             return res.redirect(`/cursos/${id_curso}/contenidos`);
         } catch (error) {
             console.error(error);

@@ -1,20 +1,87 @@
-<h1>Añadir contenido a: <%= curso.titulo %></h1>
+<!-- ==========================================================================
+     Archivo: src/views/contenidos/crear.ejs
+     ========================================================================== -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Añadir Contenido - Plataforma Escolar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <!-- CABECERA -->
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4 mb-5">
+            <div>
+                <h1 class="text-verde-primario">Añadir contenido a: <%= curso.titulo %></h1>
+                <p class="text-muted fs-5 mt-2 mb-0">Completa la información para el nuevo material de estudio.</p>
+            </div>
+            
+            <!-- Acciones de Profesor -->
+            <div id="seccion-acciones-profesor" class="d-none d-flex flex-wrap gap-2 flex-shrink-0 mt-3 mt-md-0">
+                <a href="/cursos/<%= curso.id %>/contenidos" class="btn btn-secundario">
+                    <span class="me-1">&larr;</span> Volver a Contenidos
+                </a>
+            </div>
+        </header>
 
-<form action="/cursos/<%= curso.id %>/contenidos/crear" method="POST">
-  <label>Tipo de material:</label>
-  <select name="tipo" required>
-    <option value="video">Vídeo</option>
-    <option value="pdf">PDF</option>
-    <option value="texto">Texto / Enlace</option>
-  </select>
-  <br><br>
+        <!-- FORMULARIO -->
+        <main>
+            <div class="card shadow-sm p-4 border-0">
+                <form action="/cursos/<%= curso.id %>/contenidos/crear" method="POST">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Tipo de material:</label>
+                        <select name="tipo" class="form-select" required>
+                            <option value="video">Vídeo</option>
+                            <option value="pdf">PDF</option>
+                            <option value="texto">Texto / Enlace</option>
+                        </select>
+                    </div>
 
-  <label>URL del archivo:</label>
-  <input type="text" name="url_archivo" placeholder="https://ejemplo.com/archivo.pdf">
-  <br><br>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">URL del archivo:</label>
+                        <input type="text" name="url_archivo" class="form-control" placeholder="https://ejemplo.com/archivo.pdf" required>
+                    </div>
 
-  <button type="submit">Guardar Contenido</button>
-</form>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Descripción del contenido:</label>
+                        <textarea name="descripcion" class="form-control" rows="4" placeholder="Describe brevemente de qué trata este recurso..."></textarea>
+                    </div>
 
-<br>
-<a href="/cursos/<%= curso.id %>/contenidos">Cancelar y Volver</a>
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="submit" class="btn btn-primario px-5 rounded-pill">
+                            <span class="me-1">💾</span> Guardar Contenido
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- NAVEGACIÓN INFERIOR -->
+            <div class="mt-4 pt-3 border-top" style="border-color: var(--borde-suave) !important;">
+                <a href="/cursos/<%= curso.id %>/contenidos" class="btn btn-volver">
+                    <span class="fs-5">&larr;</span> Volver a mis cursos
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <!-- CONTROL DE ROL -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                    if (payload.rol === 'profesor' || payload.rol === 'administrador') {
+                        document.getElementById('seccion-acciones-profesor').classList.remove('d-none');
+                    }
+                } catch (e) {
+                    console.error("Error decodificando token", e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
