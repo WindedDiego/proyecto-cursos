@@ -194,6 +194,22 @@ module.exports = {
         }
     },
 
+    // 🚀 Nueva función añadida para ver el registro de actividad
+    verActividadAlumnos: async (req, res) => {
+        try {
+            const actividades = await RegistroActividad.findAll({
+                include: [{ model: Usuario, attributes: ['nombre', 'email', 'rol'] }],
+                order: [['createdAt', 'DESC']],
+                limit: 50
+            });
+
+            return res.render('paneles/admin-actividad', { usuario: req.usuario, actividades });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).send('Error al cargar el registro de actividad');
+        }
+    },
+
     crearUsuario: async (req, res) => {
         let transaction;
         try {

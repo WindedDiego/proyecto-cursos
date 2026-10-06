@@ -1,52 +1,87 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Panel de Alumno - Plataforma Escolar</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
+ <meta charset="UTF-8">
+ <title>Panel de Alumno - Plataforma Escolar</title>
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+ <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="container">
-        
-        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
-            <div>
-                <span class="badge rounded-pill text-uppercase mb-2" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">Estudiante</span>
-                <h1 class="text-verde-primario">Panel de Alumno</h1>
-                <p class="lead mb-0">Bienvenido/a, <strong><%= usuario.nombre %></strong></p>
-            </div>
-            <div>
-                <a href="/cursos" class="btn btn-primario shadow-sm">Ver mis Cursos &rarr;</a>
-            </div>
-        </header>
+ <div class="container py-5">
+   
+  <!-- CABECERA -->
+  <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4 mb-4">
+   <div>
+    <span class="badge rounded-pill text-uppercase mb-2" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">Estudiante</span>
+    <h1 class="text-verde-primario">Panel de Alumno</h1>
+    <p class="lead mb-0">Bienvenido/a, <strong><%= usuario.nombre %></strong></p>
+   </div>
+   <div>
+    <a href="/cursos" class="btn btn-outline-secondary shadow-sm">Volver al inicio</a>
+   </div>
+  </header>
 
-        <main>
-            <div class="tarjeta-contenido p-4">
-                <h3 class="h4 text-verde-primario mb-4 pb-2 border-bottom">Historial de Actividad Reciente</h3>
-                <div class="table-responsive">
-                    <table class="tabla-resultados w-100">
-                        <thead>
-                            <tr>
-                                <th>Recurso Accedido</th>
-                                <th class="text-end">Fecha y Hora</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% if (misActividades && misActividades.length > 0) { %>
-                                <% misActividades.forEach(act => { %>
-                                    <tr>
-                                        <td><code><%= act.recurso %></code></td>
-                                        <td class="text-end text-muted small"><%= new Date(act.hora_entrada).toLocaleString('es-ES') %></td>
-                                    </tr>
-                                <% }) %>
-                            <% } else { %>
-                                <tr><td colspan="2" class="text-center text-muted py-4">Aún no hay registros de actividad recientes.</td></tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+  <!-- OPCIONES DEL PANEL -->
+  <main class="row g-4">
+   
+   <!-- Ver Cursos -->
+   <div class="col-md-6 col-lg-3">
+    <div class="tarjeta-contenido h-100 p-4 d-flex flex-column justify-content-between text-center">
+     <div>
+      <div class="fs-1 mb-3">📚</div>
+      <h3 class="h5 text-verde-primario fw-bold">Mis Cursos</h3>
+      <p class="text-muted small">Accede a las asignaturas, temarios y contenidos oficiales.</p>
+     </div>
+     <a href="/cursos" class="btn btn-primario mt-3 w-100">Ver Cursos</a>
     </div>
+   </div>
+
+   <!-- Ver Exámenes (Nota: listado general o sección de exámenes) -->
+   <div class="col-md-6 col-lg-3">
+    <div class="tarjeta-contenido h-100 p-4 d-flex flex-column justify-content-between text-center">
+     <div>
+      <div class="fs-1 mb-3">📝</div>
+      <h3 class="h5 text-verde-primario fw-bold">Exámenes</h3>
+      <p class="text-muted small">Realiza tus pruebas evaluables y revisa tus calificaciones.</p>
+     </div>
+     <!-- Usamos el primer curso como acceso rápido o la ruta general si la tienes -->
+     <% if (cursos && cursos.length > 0) { %>
+      <a href="/cursos/<%= cursos[0].id %>/examenes" class="btn btn-primario mt-3 w-100">Ver Exámenes</a>
+     <% } else { %>
+      <button class="btn btn-secondary mt-3 w-100" disabled>Sin exámenes</button>
+     <% } %>
+    </div>
+   </div>
+
+   <!-- Ir a los Foros -->
+   <div class="col-md-6 col-lg-3">
+    <div class="tarjeta-contenido h-100 p-4 d-flex flex-column justify-content-between text-center">
+     <div>
+      <div class="fs-1 mb-3">💬</div>
+      <h3 class="h5 text-verde-primario fw-bold">Foros</h3>
+      <p class="text-muted small">Comunícate con tus profesores y compañeros de clase.</p>
+     </div>
+     <% if (cursos && cursos.length > 0) { %>
+      <a href="/cursos/<%= cursos[0].id %>/foros" class="btn btn-primario mt-3 w-100">Ir a Foros</a>
+     <% } else { %>
+      <button class="btn btn-secondary mt-3 w-100" disabled>Sin foros</button>
+     <% } %>
+    </div>
+   </div>
+
+   <!-- Modificar Datos (Perfil) -->
+   <div class="col-md-6 col-lg-3">
+    <div class="tarjeta-contenido h-100 p-4 d-flex flex-column justify-content-between text-center">
+     <div>
+      <div class="fs-1 mb-3">⚙️</div>
+      <h3 class="h5 text-verde-primario fw-bold">Modificar Datos</h3>
+      <p class="text-muted small">Actualiza tu información personal, correo o contraseña.</p>
+     </div>
+     <a href="/usuarios/perfil" class="btn btn-secundario mt-3 w-100">Editar Perfil</a>
+    </div>
+   </div>
+
+  </main>
+ </div>
 </body>
 </html>

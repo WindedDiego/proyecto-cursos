@@ -42,14 +42,17 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <span class="badge rounded-pill text-uppercase mb-1" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.7rem;">
+                                    <span class="text-uppercase mb-1" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.6rem; font-weight: normal; padding: 2px 6px; border-radius: 10px;">
                                         <%= contenido.tipo %>
                                     </span>
-                                    <h5 class="fw-bold mb-0 text-dark">
+                                    <h6 class="mb-0 text-muted fw-normal">
                                         <a href="<%= contenido.url_archivo %>" target="_blank" class="text-decoration-none text-dark">
                                             Recurso de <%= contenido.tipo %>
                                         </a>
-                                    </h5>
+                                    </h6>
+                                    <% if (contenido.descripcion) { %>
+                                        <p class="fw-bold fs-5 mb-0 mt-1 text-dark"><%= contenido.descripcion %></p>
+                                    <% } %>
                                 </div>
                             </div>
                             

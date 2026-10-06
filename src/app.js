@@ -48,9 +48,13 @@ const tareasRoutes = require('./routes/tareas');
 // ⭐👉 Importar rutas de foros
 const forosRoutes = require('./routes/foros');
 
-// ⭐👉 Importar rutas de paneles
+// ⭐👉 Importar rutas de perfiles
+const perfilRoutes = require('./routes/perfil');
+
+// ⭐👉 Importar rutas de paneles y usuarios
 const panelesRoutes = require('./routes/paneles');
 const usuariosRoutes = require('./routes/usuarios');
+
 
 // ⭐👉 Conectar rutas de cursos
 app.use('/cursos', cursosRoutes);
@@ -64,7 +68,10 @@ app.use('/cursos/:id_curso/tareas', tareasRoutes);
 // ⭐👉 Conectar rutas de foros
 app.use('/cursos/:id_curso/foros', forosRoutes);
 
-// ⭐👉 Conectar rutas de paneles
+// ⭐👉 Conectar rutas de perfiles (Colocado antes de usuarios admin para evitar bloqueos)
+app.use('/usuarios', perfilRoutes);
+
+// ⭐👉 Conectar rutas de paneles y administración de usuarios
 app.use('/paneles', panelesRoutes);
 app.use('/usuarios', usuariosRoutes);
 

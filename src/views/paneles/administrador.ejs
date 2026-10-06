@@ -17,18 +17,19 @@
     </style>
 </head>
 <body class="bg-beige">
-    <div class="container">
-        <header class="header-seccion">
+    <div class="container py-4">
+        <header class="header-seccion mb-4">
             <h1 class="mb-1">Administrar usuarios</h1>
             <p class="text-muted mb-0">Sesión iniciada como <strong class="text-verde-primario"><%= usuario.nombre %></strong></p>
-            <div class="barra-botones">
+            <div class="barra-botones mt-3">
                 <a href="/cursos" class="btn btn-secundario">Volver a cursos</a>
+                <a href="#seccion-actividad" class="btn btn-outline-dark">Ver registro de actividad</a>
             </div>
         </header>
 
         <main>
             <h2 class="h4 mb-4">Crear cuenta</h2>
-            <div class="tarjeta-contenido">
+            <div class="tarjeta-contenido mb-5">
                 <form id="crear-usuario-form" class="admin-form" action="/usuarios" method="POST" data-create-user>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -90,7 +91,7 @@
 
             <% usuarios.forEach(cuenta => { %>
                 <% const idsMatriculados = (cuenta.cursosMatriculados || []).map(curso => Number(curso.id)); %>
-                <div class="tarjeta-contenido">
+                <div class="tarjeta-contenido mb-3">
                     <form class="admin-form" action="/usuarios/<%= cuenta.id %>" method="POST" data-user-record data-user-role="<%= cuenta.rol %>" data-user-name="<%= cuenta.nombre.toLowerCase() %>">
                         <div class="row g-3">
                             <div class="col-lg-3">
@@ -138,7 +139,65 @@
                     </form>
                 </div>
             <% }) %>
-        </div>
+
+            <h2 class="h4 mt-5">Cursos y profesores</h2>
+            <% cursos.forEach(curso => { %>
+                <div class="tarjeta-contenido mb-3">
+                    <form class="admin-form" action="/usuarios/cursos/<%= curso.id %>/profesor" method="POST">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5"><strong><%= curso.titulo %></strong></div>
+                            <div class="col-md-5">
+                                <label for="profesor-<%= curso.id %>" class="form-label">Profesor responsable</label>
+                                <select id="profesor-<%= curso.id %>" name="profesor_id" class="form-select" required>
+                                    <option value="">Selecciona profesor</option>
+                                    <% profesores.forEach(profesor => { %>
+                                        <option value="<%= profesor.id %>" <%= Number(curso.profesor_id) === Number(profesor.id) ? 'selected' : '' %>><%= profesor.nombre %> (<%= profesor.email %>)</option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Asignar</button></div>
+                        </div>
+                        <div class="mt-2" data-result role="status" aria-live="polite"></div>
+                    </form>
+                </div>
+            <% }) %>
+
+            <!-- ⭐ SECCIÓN DE REGISTRO DE ACTIVIDAD INTEGRADA AQUÍ -->
+            <section id="seccion-actividad" class="mt-5 pt-4 border-top">
+                <h2 class="h4 mb-3">Registro de Actividad de los Alumnos</h2>
+                <div class="tarjeta-contenido">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Rol</th>
+                                    <th>Acción / Ruta</th>
+                                    <th>Fecha y Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (typeof actividades === 'undefined' || !actividades || actividades.length === 0) { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No hay registros de actividad todavía. (O asegúrate de pasar la variable `actividades` desde el controlador).</td>
+                                    </tr>
+                                <% } else { %>
+                                    <% actividades.forEach(act => { %>
+                                        <tr>
+                                            <td><strong><%= act.Usuario ? act.Usuario.nombre : 'Usuario desconocido' %></strong><br><small class="text-muted"><%= act.Usuario ? act.Usuario.email : '' %></small></td>
+                                            <td><span class="badge bg-secondary"><%= act.Usuario ? act.Usuario.rol : 'N/A' %></span></td>
+                                            <td><code><%= act.descripcion || act.accion || act.ruta || 'Acceso a recurso' %></code></td>
+                                            <td><%= new Date(act.createdAt).toLocaleString() %></td>
+                                        </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
     </div>
 
     <dialog id="confirmar-eliminacion-dialog">
@@ -157,29 +216,5 @@
             </div>
         </form>
     </dialog>
-
-    <h2 class="h4 mt-5">Cursos y profesores</h2>
-    <% cursos.forEach(curso => { %>
-        <div class="tarjeta-contenido">
-            <form class="admin-form" action="/usuarios/cursos/<%= curso.id %>/profesor" method="POST">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-5"><strong><%= curso.titulo %></strong></div>
-                    <div class="col-md-5">
-                        <label for="profesor-<%= curso.id %>" class="form-label">Profesor responsable</label>
-                        <select id="profesor-<%= curso.id %>" name="profesor_id" class="form-select" required>
-                            <option value="">Selecciona profesor</option>
-                            <% profesores.forEach(profesor => { %>
-                                <option value="<%= profesor.id %>" <%= Number(curso.profesor_id) === Number(profesor.id) ? 'selected' : '' %>><%= profesor.nombre %> (<%= profesor.email %>)</option>
-                            <% }) %>
-                        </select>
-                    </div>
-                    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Asignar</button></div>
-                </div>
-                <div class="mt-2" data-result role="status" aria-live="polite"></div>
-            </form>
-        </div>
-    <% }) %>
-    </div>
 </body>
 </html>
-```
