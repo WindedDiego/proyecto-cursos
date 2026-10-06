@@ -13,28 +13,25 @@ const Tarea = sequelize.define('Tarea', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    alumno_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    url_archivo: {
+    titulo: {
         type: DataTypes.STRING(255),
         allowNull: false
     },
-    fecha_envio: {
+    descripcion: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    fecha_limite: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        allowNull: true
     }
 }, {
     tableName: 'Tareas',
     timestamps: false
 });
 
-// Definir relaciones opcionales para los includes del controlador
+// Relaciones
 Curso.hasMany(Tarea, { foreignKey: 'curso_id', as: 'tareas' });
 Tarea.belongsTo(Curso, { foreignKey: 'curso_id', as: 'curso' });
-
-Usuario.hasMany(Tarea, { foreignKey: 'alumno_id', as: 'tareasEntregadas' });
-Tarea.belongsTo(Usuario, { foreignKey: 'alumno_id', as: 'alumno' });
 
 module.exports = Tarea;

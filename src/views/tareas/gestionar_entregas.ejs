@@ -1,0 +1,107 @@
+<!-- ==========================================================================
+     Archivo: src/views/tareas/gestionar_entregas.ejs
+     ========================================================================== -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestionar Entregas - Plataforma Escolar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <!-- CABECERA -->
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4 mb-5">
+            <div>
+                <h1 class="text-verde-primario">Gestionar Entregas</h1>
+                <p class="text-muted fs-5 mt-2 mb-0">Ejercicio: <%= ejercicio.titulo %></p>
+            </div>
+            
+            <div id="seccion-acciones-profesor" class="d-none d-flex flex-wrap gap-2 flex-shrink-0 mt-3 mt-md-0">
+                <a href="/cursos/<%= curso.id %>/tareas" class="btn btn-secundario">
+                    <span class="me-1">&larr;</span> Volver a Tareas
+                </a>
+            </div>
+        </header>
+
+        <!-- TABLA DE ENTREGAS -->
+        <main>
+            <div class="card shadow-sm p-4 border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Archivo</th>
+                                <th>Fecha</th>
+                                <th>Nota</th>
+                                <th>Comentario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% entregas.forEach(entrega => { %>
+                                <tr>
+                                    <td><%= entrega.alumno.nombre || entrega.alumno.nombre_usuario %></td>
+                                    <td>
+                                        <a href="<%= entrega.url_archivo %>" target="_blank" class="text-decoration-none">
+                                            📂 Ver archivo
+                                        </a>
+                                    </td>
+                                    <td><%= entrega.fecha_entrega.toLocaleString() %></td>
+                                    <td>
+                                        <% if (entrega.nota !== null) { %>
+                                            <span class="badge bg-success fs-6"><%= entrega.nota %></span>
+                                        <% } else { %>
+                                            <span class="text-muted">Pendiente</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted"><%= entrega.comentario_profesor || 'Sin comentarios' %></small>
+                                    </td>
+                                    <td>
+                                        <form action="/cursos/<%= curso.id %>/tareas/gestionar_entregas?id_ejercicio=<%= ejercicio.id %>" method="POST" class="d-flex gap-2">
+                                            <input type="hidden" name="id_entrega" value="<%= entrega.id %>">
+                                            <input type="number" step="0.1" name="nota" class="form-control form-control-sm" placeholder="Nota" style="width: 80px;" value="<%= entrega.nota || '' %>">
+                                            <input type="text" name="comentario_profesor" class="form-control form-control-sm" placeholder="Comentario" value="<%= entrega.comentario_profesor || '' %>">
+                                            <button type="submit" class="btn btn-sm btn-primario">Guardar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            <% if (entregas.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">No hay entregas para este ejercicio.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NAVEGACIÓN INFERIOR -->
+            <div class="mt-4 pt-3 border-top" style="border-color: var(--borde-suave) !important;">
+                <a href="/cursos/<%= curso.id %>/tareas" class="btn btn-volver">
+                    <span class="fs-5">&larr;</span> Volver a Tareas
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                    if (payload.rol === 'profesor' || payload.rol === 'administrador') {
+                        document.getElementById('seccion-acciones-profesor').classList.remove('d-none');
+                    }
+                } catch (e) { console.error(e); }
+            }
+        });
+    </script>
+</body>
+</html>
