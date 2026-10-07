@@ -4,7 +4,8 @@ const { QueryTypes, Op } = require('sequelize');
 const Usuario = require('../models/Usuario');
 const Curso = require('../models/Curso');
 const Matricula = require('../models/Matricula');
-const Tarea = require('../models/Tarea');
+const Entrega = require('../models/Entrega');
+const RespuestaDesarrollo = require('../models/RespuestaDesarrollo');
 const MensajeForo = require('../models/MensajeForo');
 const RegistroActividad = require('../models/RegistroActividad');
 const ResultadoExamen = require('../models/ResultadoExamen');
@@ -42,9 +43,9 @@ function describirActividad(recurso, cursos) {
     if (ruta === '/cursos') return 'Consultó su lista de cursos';
     if (m && !sub) return `Entró al curso ${nombreCurso}`;
     if (m && sub === 'contenidos') return `Vio los contenidos de ${nombreCurso}`;
-    if (m && sub === 'tareas') return metodo === 'POST'
-        ? `Entregó una tarea en ${nombreCurso}` : `Vio las tareas de ${nombreCurso}`;
-    if (m && sub === 'tareas/crear') return `Abrió el formulario de entrega en ${nombreCurso}`;
+    if (m && sub === 'tareas') return `Vio los ejercicios de ${nombreCurso}`;
+    if (m && /^tareas\/enviar_entrega\/\d+$/.test(sub)) return metodo === 'POST'
+        ? `Envió una entrega en ${nombreCurso}` : `Abrió el formulario de entrega de un ejercicio en ${nombreCurso}`;
     if (m && sub === 'foros') return `Vio los foros de ${nombreCurso}`;
     if (m && /^foros\/\d+$/.test(sub)) return `Abrió un foro de ${nombreCurso}`;
     if (m && /^foros\/\d+\/mensajes$/.test(sub)) return `Publicó un mensaje en un foro de ${nombreCurso}`;
@@ -248,22 +249,6 @@ module.exports = {
         } catch (error) {
             console.error(error);
             return res.status(500).send('Error al cargar la administración de usuarios');
-        }
-    },
-
-    // 🚀 Nueva función añadida para ver el registro de actividad
-    verActividadAlumnos: async (req, res) => {
-        try {
-            const actividades = await RegistroActividad.findAll({
-                include: [{ model: Usuario, attributes: ['nombre', 'email', 'rol'] }],
-                order: [['createdAt', 'DESC']],
-                limit: 50
-            });
-
-            return res.render('paneles/admin-actividad', { usuario: req.usuario, actividades });
-        } catch (error) {
-            console.error(error);
-            return res.status(500).send('Error al cargar el registro de actividad');
         }
     },
 
@@ -490,7 +475,8 @@ module.exports = {
             }
 
             await Matricula.destroy({ where: { alumno_id: usuarioId }, transaction });
-            await Tarea.destroy({ where: { alumno_id: usuarioId }, transaction });
+            await Entrega.destroy({ where: { alumno_id: usuarioId }, transaction });
+            await RespuestaDesarrollo.destroy({ where: { alumno_id: usuarioId }, transaction });
             await MensajeForo.destroy({ where: { usuario_id: usuarioId }, transaction });
             await ResultadoExamen.destroy({ where: { alumno_id: usuarioId }, transaction });
             await RegistroActividad.update(

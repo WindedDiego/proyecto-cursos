@@ -8,9 +8,6 @@ const adminMiddleware = require('../middlewares/adminMiddleware');
 // Middleware global de administración para este archivo
 router.use(authMiddleware, roleMiddleware('administrador'), adminMiddleware);
 
-// Ruta para ver la actividad de los alumnos
-router.get('/actividad', AdminController.verActividadAlumnos);
-
 // Rutas de administración existentes
 router.post('/', AdminController.crearUsuario);
 router.post('/cursos/:cursoId/profesor', AdminController.asignarProfesor);

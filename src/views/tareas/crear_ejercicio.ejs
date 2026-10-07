@@ -1,0 +1,60 @@
+<!-- ==========================================================================
+     Archivo: src/views/tareas/crear_ejercicio.ejs
+     ========================================================================== -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Crear Ejercicio - Plataforma Escolar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4 mb-5">
+            <div>
+                <h1 class="text-verde-primario">Crear Nuevo Ejercicio</h1>
+                <p class="text-muted fs-5 mt-2 mb-0">Define las instrucciones y la fecha límite para los alumnos.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/cursos/<%= id_curso %>/tareas" class="btn btn-secundario">
+                    <span class="fs-5 me-1">&larr;</span> Volver a Tareas
+                </a>
+            </div>
+        </header>
+
+        <main>
+            <div class="card shadow-sm p-4 border-0">
+                <% const v = (typeof valores !== 'undefined' && valores) ? valores : {}; %>
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <form action="/cursos/<%= id_curso %>/tareas/crear" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Título del Ejercicio</label>
+                        <input type="text" name="titulo" class="form-control" placeholder="Ej: Ejercicio de Funciones de Primer Grado" value="<%= v.titulo || '' %>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción / Instrucciones</label>
+                        <textarea name="descripcion" class="form-control" rows="6" placeholder="Escribe aquí las instrucciones detalladas para los alumnos..."><%= v.descripcion || '' %></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Fecha Límite de Entrega</label>
+                        <input type="datetime-local" name="fecha_limite" class="form-control" value="<%= v.fecha_limite || '' %>">
+                    </div>
+
+                    <%- include('../partials/origen_archivo', { etiqueta: 'Material adjunto del ejercicio (opcional):', obligatorio: false, maxMB: subida.limites.tareas }) %>
+
+                    <div class="d-grid gap-2 d-md-block">
+                        <button type="submit" class="btn btn-primario px-5 rounded-pill">
+                            <span class="me-1">💾</span> Guardar Ejercicio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

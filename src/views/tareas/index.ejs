@@ -1,5 +1,5 @@
 <!-- ==========================================================================
-     Archivo: src/views/tareas/index.ejs (Con botón de subida siempre visible)
+     Archivo: src/views/tareas/index.ejs
      ========================================================================== -->
 <!DOCTYPE html>
 <html lang="es">
@@ -9,66 +9,121 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-    <div class="container">
+<body class="bg-light">
+    <div class="container py-4">
         
-        <!-- CABECERA CON BOTÓN DE SUBIDA VISIBLE -->
-        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+        <!-- CABECERA -->
+        <header class="header-seccion d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-4 mb-5">
             <div>
                 <span class="badge rounded-pill text-uppercase mb-2" style="background-color: var(--verde-claro); color: var(--verde-oscuro); font-size: 0.75rem;">Módulo de Trabajos</span>
                 <h1 class="text-verde-primario">Entregas y Trabajos</h1>
                 <p class="lead mb-0"><%= curso.titulo %></p>
             </div>
             
-            <!-- Botón para subir la tarea directamente -->
             <div>
-                <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primario shadow-sm">
-                    <span class="fs-5 me-1">📤</span> Subir Entrega
+                <a href="/cursos/<%= curso.id %>" class="btn btn-outline-secondary shadow-sm">
+                    ⬅️ Volver a Cursos
                 </a>
+                <% if (puedeGestionar) { %>
+                    <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primario shadow-sm">
+                        <span class="fs-5 me-1">➕</span> Crear Ejercicio
+                    </a>
+                <% } %>
             </div>
         </header>
 
         <main>
-            <% if (tareas && tareas.length > 0) { %>
-                <div class="d-flex flex-column">
-                    <% tareas.forEach(tarea => { %>
-                        <div class="tarjeta-lista flex-column flex-md-row">
-                            <div class="icon-box">📝</div>
-                            
-                            <div class="flex-grow-1 text-center text-md-start">
-                                <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
-                                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25" style="font-size: 0.75rem;">
-                                        Entrega Registrada
-                                    </span>
+            <!-- SECCIÓN 1: EJERCICIOS -->
+            <h4 class="fw-bold mb-3 text-verde-primario">Ejercicios Disponibles</h4>
+            <% if (ejercicios && ejercicios.length > 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+                    <% ejercicios.forEach(tarea => { %>
+                        <div class="col">
+                            <div class="card h-100 shadow-sm border-0 p-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="icon-box">📝</div>
+                                    <h5 class="fw-bold mb-0"><%= tarea.titulo %></h5>
                                 </div>
-                                <h4 class="fw-bold mb-1">Documento / Proyecto del alumno</h4>
-                                <p class="text-muted small mb-0 text-truncate" style="max-width: 400px;">
-                                    Enlace: <a href="<%= tarea.url_archivo %>" target="_blank" class="text-verde-primario"><%= tarea.url_archivo %></a>
+                                <p class="text-muted small mb-3" style="height: 3em; overflow: hidden;">
+                                    <%= tarea.descripcion || 'Sin descripción disponible para este ejercicio.' %>
                                 </p>
-                            </div>
-                            
-                            <div class="mt-3 mt-md-0 w-100 w-md-auto text-end">
-                                <a href="<%= tarea.url_archivo %>" target="_blank" class="btn btn-secundario w-100">
-                                    Visualizar Entrega &rarr;
-                                </a>
+                                <% if (tarea.url_adjunto) { %>
+                                    <p class="mb-3">
+                                        <a href="<%= tarea.url_adjunto %>" target="_blank" rel="noopener" class="small">📎 Material adjunto</a>
+                                    </p>
+                                <% } %>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <% if (tarea.fecha_limite) { %>
+                                        <small class="text-muted">Límite: <%= tarea.fecha_limite %></small>
+                                    <% } %>
+                                    <% if (!puedeGestionar) { %>
+                                        <a href="/cursos/<%= curso.id %>/tareas/enviar_entrega/<%= tarea.id %>" class="btn btn-sm btn-primario">
+                                            Realizar Entrega
+                                        </a>
+                                    <% } else if (puedeCalificar) { %>
+                                        <a href="/cursos/<%= curso.id %>/tareas/gestionar_entregas/<%= tarea.id %>" class="btn btn-sm btn-primario">
+                                            Ver entregas y calificar
+                                        </a>
+                                    <% } %>
+                                </div>
                             </div>
                         </div>
                     <% }) %>
                 </div>
             <% } else { %>
-                <div class="empty-state">
-                    <div class="icon">📥</div>
-                    <h3 class="text-verde-primario fw-bold mb-2">Bandeja de entregas limpia</h3>
-                    <p class="text-muted mb-4">No hay ninguna tarea o proyecto subido actualmente en este curso.</p>
-                    <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primario">
-                        📤 Subir tu primera tarea ahora
-                    </a>
-                </div>
+                <div class="alert alert-info shadow-sm">No hay ejercicios creados para este curso.</div>
             <% } %>
 
-            <a href="/cursos/<%= curso.id %>" class="btn-volver">
-                <span class="fs-5">&larr;</span> Volver al resumen del curso
-            </a>
+            <hr class="my-5">
+
+            <!-- SECCIÓN 2: ENTREGAS -->
+            <h4 class="fw-bold mb-3 text-verde-primario">Registro de Entregas</h4>
+            <% if (entregas && entregas.length > 0) { %>
+                <div class="card shadow-sm border-0 p-4">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Ejercicio</th>
+                                    <th>Fecha</th>
+                                    <th class="text-center">Nota</th>
+                                    <th>Comentario del profesor</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% entregas.forEach(entrega => { %>
+                                    <tr>
+                                        <td class="small"><%= entrega.alumno ? (entrega.alumno.nombre || entrega.alumno.email) : 'N/A' %></td>
+                                        <td class="small"><%= entrega.tarea ? entrega.tarea.titulo : 'N/A' %></td>
+                                        <td class="small"><%= entrega.fecha_envio ? new Date(entrega.fecha_envio).toLocaleString() : '-' %></td>
+                                        <td class="text-center">
+                                            <% if (entrega.nota !== null && entrega.nota !== undefined) { %>
+                                                <span class="badge bg-success fs-6"><%= Number(entrega.nota).toFixed(2).replace(/\.?0+$/, '') %></span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary">Pendiente</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted"><%= entrega.comentario_profesor || '-' %></small>
+                                        </td>
+                                        <td class="text-center">
+                                            <% if (entrega.url_archivo) { %>
+                                                <a href="<%= entrega.url_archivo %>" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="alert alert-warning shadow-sm">
+                    No hay entregas registradas actualmente en este curso.
+                </div>
+            <% } %>
         </main>
     </div>
 </body>
