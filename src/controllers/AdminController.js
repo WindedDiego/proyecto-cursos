@@ -410,7 +410,7 @@ module.exports = {
             if (!profesor) return res.status(400).json({ mensaje: 'Selecciona una cuenta con rol profesor' });
 
             await curso.update({ profesor_id: profesor.id });
-            return res.json({ mensaje: 'Profesor asignado al curso' });
+            return res.render('paneles/asignacion_exito');
         } catch (error) {
             console.error(error);
             return res.status(500).json({ mensaje: 'Error al asignar el profesor' });
