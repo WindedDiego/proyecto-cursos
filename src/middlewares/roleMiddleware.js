@@ -15,6 +15,11 @@ module.exports = (rolesPermitidos) => {
             }
             usuario.rol = usuarioActual.rol;
 
+            // Si el usuario es administrador, tiene acceso total automáticamente
+            if (usuario.rol === 'administrador') {
+                return next();
+            }
+
             // Si rolesPermitidos es un string único, lo convertimos en array
             const rolesArray = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];
 

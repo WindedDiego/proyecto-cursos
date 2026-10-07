@@ -20,9 +20,9 @@ router.post('/enviar_entrega/:id_ejercicio', roleMiddleware('alumno'), subirEntr
 
 // 3. Rutas para el PROFESOR
 // Formulario para crear un nuevo ejercicio
-router.get('/crear', roleMiddleware('profesor'), tareaController.crearEjercicioForm);
+router.get('/crear', roleMiddleware('profesor', 'administrador'), tareaController.crearEjercicioForm);
 // Acción para guardar el ejercicio
-router.post('/crear', roleMiddleware('profesor'), subirAdjuntoTarea, tareaController.crearEjercicio);
+router.post('/crear', roleMiddleware('profesor', 'administrador'), subirAdjuntoTarea, tareaController.crearEjercicio);
 
 // Gestión de entregas (Ver lista de alumnos y calificar)
 router.get('/gestionar_entregas/:id_ejercicio', roleMiddleware('profesor'), tareaController.gestionarEntregas);
