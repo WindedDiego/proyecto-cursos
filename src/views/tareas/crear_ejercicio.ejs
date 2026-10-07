@@ -25,21 +25,27 @@
 
         <main>
             <div class="card shadow-sm p-4 border-0">
-                <form action="/cursos/<%= id_curso %>/tareas/crear" method="POST">
+                <% const v = (typeof valores !== 'undefined' && valores) ? valores : {}; %>
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <form action="/cursos/<%= id_curso %>/tareas/crear" method="POST" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Título del Ejercicio</label>
-                        <input type="text" name="titulo" class="form-control" placeholder="Ej: Ejercicio de Funciones de Primer Grado" required>
+                        <input type="text" name="titulo" class="form-control" placeholder="Ej: Ejercicio de Funciones de Primer Grado" value="<%= v.titulo || '' %>" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Descripción / Instrucciones</label>
-                        <textarea name="descripcion" class="form-control" rows="6" placeholder="Escribe aquí las instrucciones detalladas para los alumnos..."></textarea>
+                        <textarea name="descripcion" class="form-control" rows="6" placeholder="Escribe aquí las instrucciones detalladas para los alumnos..."><%= v.descripcion || '' %></textarea>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label fw-bold">Fecha Límite de Entrega</label>
-                        <input type="datetime-local" name="fecha_limite" class="form-control">
+                        <input type="datetime-local" name="fecha_limite" class="form-control" value="<%= v.fecha_limite || '' %>">
                     </div>
+
+                    <%- include('../partials/origen_archivo', { etiqueta: 'Material adjunto del ejercicio (opcional):', obligatorio: false, maxMB: subida.limites.tareas }) %>
 
                     <div class="d-grid gap-2 d-md-block">
                         <button type="submit" class="btn btn-primario px-5 rounded-pill">

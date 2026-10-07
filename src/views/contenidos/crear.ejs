@@ -30,24 +30,25 @@
         <!-- FORMULARIO -->
         <main>
             <div class="card shadow-sm p-4 border-0">
-                <form action="/cursos/<%= curso.id %>/contenidos/crear" method="POST">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <form action="/cursos/<%= curso.id %>/contenidos/crear" method="POST" enctype="multipart/form-data">
                     <div class="mb-4">
                         <label class="form-label fw-bold">Tipo de material:</label>
+                        <% const tipoSel = (typeof valores !== 'undefined' && valores.tipo) || 'video'; %>
                         <select name="tipo" class="form-select" required>
-                            <option value="video">Vídeo</option>
-                            <option value="pdf">PDF</option>
-                            <option value="texto">Texto / Enlace</option>
+                            <option value="video" <%= tipoSel === 'video' ? 'selected' : '' %>>Vídeo</option>
+                            <option value="pdf" <%= tipoSel === 'pdf' ? 'selected' : '' %>>PDF</option>
+                            <option value="texto" <%= tipoSel === 'texto' ? 'selected' : '' %>>Texto / Enlace</option>
                         </select>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">URL del archivo:</label>
-                        <input type="text" name="url_archivo" class="form-control" placeholder="https://ejemplo.com/archivo.pdf" required>
-                    </div>
+                    <%- include('../partials/origen_archivo', { etiqueta: 'Material:', obligatorio: true, maxMB: subida.limites.contenidos }) %>
 
                     <div class="mb-4">
                         <label class="form-label fw-bold">Descripción del contenido:</label>
-                        <textarea name="descripcion" class="form-control" rows="4" placeholder="Describe brevemente de qué trata este recurso..."></textarea>
+                        <textarea name="descripcion" class="form-control" rows="4" placeholder="Describe brevemente de qué trata este recurso..."><%= (typeof valores !== 'undefined' && valores.descripcion) || '' %></textarea>
                     </div>
 
                     <div class="d-grid gap-2 d-md-block">

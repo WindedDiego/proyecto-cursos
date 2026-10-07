@@ -1,5 +1,6 @@
 const Contenido = require('../models/Contenido');
 const Curso = require('../models/Curso');
+const { resolverOrigen, descartarArchivo } = require('../utils/archivos');
 
 module.exports = {
     listarPorCurso: async (req, res) => {
@@ -34,7 +35,7 @@ module.exports = {
                 return res.status(404).send('El curso seleccionado no existe.');
             }
             
-            res.render('contenidos/crear', { curso });
+            res.render('contenidos/crear', { curso, error: null, valores: {} });
         } catch (error) {
             console.error(error);
             res.status(500).send('Error al cargar el formulario');
@@ -44,15 +45,29 @@ module.exports = {
     crear: async (req, res) => {
         try {
             const id_curso = req.params.id_curso;
-            const { tipo, url_archivo, descripcion } = req.body;
-            
+            const tipo = String(req.body.tipo || '').trim();
+            const descripcion = String(req.body.descripcion || '').trim();
+
+            const { valor: url_archivo, error } = resolverOrigen(req, 'contenidos', { obligatorio: true });
+            const errorFinal = error || (!['video', 'pdf', 'texto'].includes(tipo) ? 'Elige un tipo de material válido.' : null);
+
+            if (errorFinal) {
+                if (!error) descartarArchivo(req);
+                const curso = await Curso.findByPk(id_curso);
+                return res.status(400).render('contenidos/crear', {
+                    curso,
+                    error: errorFinal,
+                    valores: { tipo, descripcion }
+                });
+            }
+
             await Contenido.create({
                 curso_id: id_curso,
-                tipo: tipo,
-                url_archivo: url_archivo || null,
+                tipo,
+                url_archivo,
                 descripcion: descripcion || null
             });
-            
+
             res.redirect(`/cursos/${id_curso}/contenidos`);
         } catch (error) {
             console.error(error);

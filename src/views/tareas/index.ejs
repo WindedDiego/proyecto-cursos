@@ -21,13 +21,12 @@
             </div>
             
             <div>
+                <a href="/cursos/<%= curso.id %>" class="btn btn-outline-secondary shadow-sm">
+                    ⬅️ Volver a Cursos
+                </a>
                 <% if (puedeGestionar) { %>
                     <a href="/cursos/<%= curso.id %>/tareas/crear" class="btn btn-primario shadow-sm">
                         <span class="fs-5 me-1">➕</span> Crear Ejercicio
-                    </a>
-                <% } else { %>
-                    <a href="/cursos/<%= curso.id %>/tareas/enviar_entrega" class="btn btn-primario shadow-sm">
-                        <span class="fs-5 me-1">📤</span> Subir Entrega
                     </a>
                 <% } %>
             </div>
@@ -48,13 +47,22 @@
                                 <p class="text-muted small mb-3" style="height: 3em; overflow: hidden;">
                                     <%= tarea.descripcion || 'Sin descripción disponible para este ejercicio.' %>
                                 </p>
+                                <% if (tarea.url_adjunto) { %>
+                                    <p class="mb-3">
+                                        <a href="<%= tarea.url_adjunto %>" target="_blank" rel="noopener" class="small">📎 Material adjunto</a>
+                                    </p>
+                                <% } %>
                                 <div class="d-flex justify-content-between align-items-center mt-auto">
                                     <% if (tarea.fecha_limite) { %>
                                         <small class="text-muted">Límite: <%= tarea.fecha_limite %></small>
                                     <% } %>
                                     <% if (!puedeGestionar) { %>
-                                        <a href="/cursos/<%= curso.id %>/tareas/enviar_entrega?id_ejercicio=<%= tarea.id %>" class="btn btn-sm btn-primario">
+                                        <a href="/cursos/<%= curso.id %>/tareas/enviar_entrega/<%= tarea.id %>" class="btn btn-sm btn-primario">
                                             Realizar Entrega
+                                        </a>
+                                    <% } else if (puedeCalificar) { %>
+                                        <a href="/cursos/<%= curso.id %>/tareas/gestionar_entregas/<%= tarea.id %>" class="btn btn-sm btn-primario">
+                                            Ver entregas y calificar
                                         </a>
                                     <% } %>
                                 </div>
@@ -79,27 +87,27 @@
                                     <th>Alumno</th>
                                     <th>Ejercicio</th>
                                     <th>Fecha</th>
-                                    <% if (puedeGestionar) { %>
-                                        <th class="text-center">Nota</th>
-                                        <th class="text-center">Comentario</th>
-                                    <% } %>
+                                    <th class="text-center">Nota</th>
+                                    <th>Comentario del profesor</th>
                                     <th class="text-center">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <% entregas.forEach(entrega => { %>
                                     <tr>
-                                        <td class="small"><%= entrega.alumno ? entrega.alumno.email : 'N/A' %></td>
+                                        <td class="small"><%= entrega.alumno ? (entrega.alumno.nombre || entrega.alumno.email) : 'N/A' %></td>
                                         <td class="small"><%= entrega.tarea ? entrega.tarea.titulo : 'N/A' %></td>
                                         <td class="small"><%= entrega.fecha_envio ? new Date(entrega.fecha_envio).toLocaleString() : '-' %></td>
-                                        <% if (puedeGestionar) { %>
-                                            <td class="text-center">
-                                                <span class="badge bg-primary"><%= entrega.nota || '-' %></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <small class="text-muted"><%= entrega.comentario_profesor || '-' %></small>
-                                            </td>
-                                        <% } %>
+                                        <td class="text-center">
+                                            <% if (entrega.nota !== null && entrega.nota !== undefined) { %>
+                                                <span class="badge bg-success fs-6"><%= Number(entrega.nota).toFixed(2).replace(/\.?0+$/, '') %></span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary">Pendiente</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted"><%= entrega.comentario_profesor || '-' %></small>
+                                        </td>
                                         <td class="text-center">
                                             <% if (entrega.url_archivo) { %>
                                                 <a href="<%= entrega.url_archivo %>" target="_blank" class="btn btn-sm btn-outline-primary">Ver</a>
@@ -116,12 +124,6 @@
                     No hay entregas registradas actualmente en este curso.
                 </div>
             <% } %>
-
-            <div class="mt-5 pt-3 border-top">
-                <a href="/cursos/<%= curso.id %>" class="btn btn-volver">
-                    <span class="fs-5">&larr;</span> Volver al resumen del curso
-                </a>
-            </div>
         </main>
     </div>
 </body>

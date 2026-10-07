@@ -4,6 +4,7 @@ const tareaController = require('../controllers/TareaController');
 const authMiddleware = require('../middlewares/authMiddleware');
 const roleMiddleware = require('../middlewares/roleMiddleware');
 const courseAccessMiddleware = require('../middlewares/courseAccessMiddleware');
+const { subirEntrega, subirAdjuntoTarea } = require('../middlewares/uploadMiddleware');
 
 // Aplicar middlewares globales a todas las rutas de este archivo
 router.use(authMiddleware, courseAccessMiddleware);
@@ -13,19 +14,19 @@ router.get('/', tareaController.listarPorCurso);
 
 // 2. Rutas para el ALUMNO
 // Formulario para subir entrega
-router.get('/enviar_entrega', roleMiddleware('alumno'), tareaController.enviarEntregaForm);
+router.get('/enviar_entrega/:id_ejercicio', roleMiddleware('alumno'), tareaController.enviarEntregaForm);
 // Acción para procesar la subida
-router.post('/enviar_entrega', roleMiddleware('alumno'), tareaController.enviarEntrega);
+router.post('/enviar_entrega/:id_ejercicio', roleMiddleware('alumno'), subirEntrega, tareaController.enviarEntrega);
 
 // 3. Rutas para el PROFESOR
 // Formulario para crear un nuevo ejercicio
 router.get('/crear', roleMiddleware('profesor'), tareaController.crearEjercicioForm);
 // Acción para guardar el ejercicio
-router.post('/crear', roleMiddleware('profesor'), tareaController.crearEjercicio);
+router.post('/crear', roleMiddleware('profesor'), subirAdjuntoTarea, tareaController.crearEjercicio);
 
 // Gestión de entregas (Ver lista de alumnos y calificar)
-router.get('/gestionar_entregas', roleMiddleware('profesor'), tareaController.gestionarEntregas);
-// Acción de calificación
-router.post('/gestionar_entregas', roleMiddleware('profesor'), tareaController.calificarEntrega);
+router.get('/gestionar_entregas/:id_ejercicio', roleMiddleware('profesor'), tareaController.gestionarEntregas);
+// Acción de calificación (nota + comentario) de una entrega concreta
+router.post('/gestionar_entregas/:id_ejercicio/:id_entrega', roleMiddleware('profesor'), tareaController.calificarEntrega);
 
 module.exports = router;

@@ -10,6 +10,10 @@ require('./associations');
 // 👉 Importar middleware de registro de actividad
 const activityMiddleware = require('./middlewares/activityMiddleware');
 const authMiddleware = require('./middlewares/authMiddleware');
+const { UPLOADS_DIR, EXTENSIONES_PERMITIDAS, LIMITES_MB } = require('./middlewares/uploadMiddleware');
+
+// Datos de subida disponibles en todas las vistas (formatos y límites de tamaño)
+app.locals.subida = { extensiones: EXTENSIONES_PERMITIDAS, limites: LIMITES_MB };
 
 // 👉 Activar EJS y carpeta de vistas
 app.set('view engine', 'ejs');
@@ -25,6 +29,23 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Registra el usuario autenticado cuando la solicitud incluye un token válido.
 app.use(authMiddleware.optional);
+
+// Archivos subidos (entregas, contenidos y adjuntos de tareas): solo para usuarios con sesión.
+// Se sirven con nosniff y, salvo formatos visualizables (PDF, imágenes, audio/vídeo, texto), como descarga.
+const VISUALIZABLES = new Set(['.pdf', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.mp4', '.webm', '.mp3', '.txt']);
+app.use('/uploads', (req, res, next) => {
+  if (!req.usuario) return res.status(401).send('Inicia sesión para acceder a este archivo.');
+  next();
+}, express.static(UPLOADS_DIR, {
+  index: false,
+  dotfiles: 'deny',
+  setHeaders: (res, filePath) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (!VISUALIZABLES.has(path.extname(filePath).toLowerCase())) {
+      res.setHeader('Content-Disposition', 'attachment');
+    }
+  }
+}));
 
 // Registra la entrada y salida de cada recurso dinámico.
 app.use(activityMiddleware);

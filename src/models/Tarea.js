@@ -24,6 +24,10 @@ const Tarea = sequelize.define('Tarea', {
     fecha_limite: {
         type: DataTypes.DATE,
         allowNull: true
+    },
+    url_adjunto: {
+        type: DataTypes.STRING(255),
+        allowNull: true
     }
 }, {
     tableName: 'Tareas',

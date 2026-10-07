@@ -28,6 +28,12 @@
 
         <!-- TABLA DE ENTREGAS -->
         <main>
+            <% if (typeof mensaje !== 'undefined' && mensaje) { %>
+                <div class="alert alert-success"><%= mensaje %></div>
+            <% } %>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger"><%= error %></div>
+            <% } %>
             <div class="card shadow-sm p-4 border-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
@@ -44,15 +50,15 @@
                         <tbody>
                             <% entregas.forEach(entrega => { %>
                                 <tr>
-                                    <td><%= entrega.alumno.nombre || entrega.alumno.nombre_usuario %></td>
+                                    <td><%= entrega.alumno ? (entrega.alumno.nombre || entrega.alumno.email) : 'N/A' %></td>
                                     <td>
-                                        <a href="<%= entrega.url_archivo %>" target="_blank" class="text-decoration-none">
-                                            📂 Ver archivo
+                                        <a href="<%= entrega.url_archivo %>" target="_blank" rel="noopener" class="text-decoration-none">
+                                            📂 Ver entrega
                                         </a>
                                     </td>
-                                    <td><%= entrega.fecha_entrega.toLocaleString() %></td>
+                                    <td><%= entrega.fecha_envio ? new Date(entrega.fecha_envio).toLocaleString() : '-' %></td>
                                     <td>
-                                        <% if (entrega.nota !== null) { %>
+                                        <% if (entrega.nota !== null && entrega.nota !== undefined) { %>
                                             <span class="badge bg-success fs-6"><%= entrega.nota %></span>
                                         <% } else { %>
                                             <span class="text-muted">Pendiente</span>
@@ -62,10 +68,9 @@
                                         <small class="text-muted"><%= entrega.comentario_profesor || 'Sin comentarios' %></small>
                                     </td>
                                     <td>
-                                        <form action="/cursos/<%= curso.id %>/tareas/gestionar_entregas?id_ejercicio=<%= ejercicio.id %>" method="POST" class="d-flex gap-2">
-                                            <input type="hidden" name="id_entrega" value="<%= entrega.id %>">
-                                            <input type="number" step="0.1" name="nota" class="form-control form-control-sm" placeholder="Nota" style="width: 80px;" value="<%= entrega.nota || '' %>">
-                                            <input type="text" name="comentario_profesor" class="form-control form-control-sm" placeholder="Comentario" value="<%= entrega.comentario_profesor || '' %>">
+                                        <form action="/cursos/<%= curso.id %>/tareas/gestionar_entregas/<%= ejercicio.id %>/<%= entrega.id %>" method="POST" class="d-flex gap-2">
+                                            <input type="number" step="0.01" min="0" max="10" name="nota" class="form-control form-control-sm" placeholder="0-10" style="width: 90px;" value="<%= (entrega.nota !== null && entrega.nota !== undefined) ? entrega.nota : '' %>">
+                                            <input type="text" name="comentario_profesor" maxlength="1000" class="form-control form-control-sm" placeholder="Comentario" value="<%= entrega.comentario_profesor || '' %>">
                                             <button type="submit" class="btn btn-sm btn-primario">Guardar</button>
                                         </form>
                                     </td>

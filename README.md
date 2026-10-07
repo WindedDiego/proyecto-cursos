@@ -23,3 +23,13 @@ Haz un respaldo antes de migrar una base compartida o de producción. Cada cambi
 Después de aplicar las migraciones, visita `/`. Si todavía no existe un administrador, la aplicación redirige a `/auth/admin_login` para crear el primero. Después de crearlo, la ruta raíz redirige a `/auth/login` y el formulario de creación inicial queda cerrado. La contraseña se guarda con bcrypt y debe tener al menos 12 caracteres.
 
 El registro público crea únicamente alumnos. Un administrador autenticado puede crear y editar cuentas de profesor, alumno, observador u otros administradores, matricular alumnos y asignar profesores a cursos desde `/paneles/administrador`. También puede gestionar cursos, contenidos y exámenes, y consultar el panel de actividad.
+
+## Archivos subidos
+
+Los alumnos (entregas), los profesores (contenidos) y los profesores al crear ejercicios (adjunto opcional) pueden indicar una URL o subir un archivo. Los archivos se guardan en disco, en la carpeta `uploads/` de la raíz del proyecto:
+
+- `uploads/entregas/`: entregas de los alumnos (máx. 10 MB)
+- `uploads/contenidos/`: material de estudio de los profesores (máx. 50 MB)
+- `uploads/tareas/`: adjuntos de los ejercicios (máx. 10 MB)
+
+En la base de datos solo se guarda la ruta (`/uploads/<carpeta>/<nombre>`) en `Entregas.url_archivo`, `Contenidos.url_archivo` y `Tareas.url_adjunto`. Los nombres se generan aleatoriamente. `/uploads` solo es accesible con sesión iniciada. `uploads/` no está en git: inclúyela en las copias de seguridad.
