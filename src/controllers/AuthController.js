@@ -53,6 +53,9 @@ module.exports = {
   // Login de usuario
   login: async (req, res) => {
     try {
+      // El token aún no existe en este punto: no atribuir el login a nadie por defecto
+      if (req.registroActividad) req.registroActividad.usuario_id = null;
+
       const email = req.body.email;
       const passwordPlain = req.body.contraseña || req.body.contrasena;
 
@@ -67,6 +70,9 @@ module.exports = {
       if (!coincide) {
         return res.status(401).json({ mensaje: 'Contraseña incorrecta' });
       }
+
+      // Login correcto: el registro (se guarda al terminar la respuesta) pasa a ser de este usuario
+      if (req.registroActividad) req.registroActividad.usuario_id = usuario.id;
 
       // Crear token JWT
       const token = jwt.sign(

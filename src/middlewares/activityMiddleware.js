@@ -25,6 +25,9 @@ module.exports = async (req, res, next) => {
         console.error('Error al registrar la hora de entrada en la actividad:', error);
     }
 
+    // Permite que los controladores (p. ej. el login) ajusten el registro de esta petición
+    req.registroActividad = registro;
+
     // Registrar la hora de salida cuando el servidor finalice la respuesta
     res.on('finish', async () => {
         if (registro) {

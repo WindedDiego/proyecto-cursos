@@ -177,21 +177,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <% if (typeof actividades === 'undefined' || !actividades || actividades.length === 0) { %>
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">No hay registros de actividad todavía. (O asegúrate de pasar la variable `actividades` desde el controlador).</td>
-                                    </tr>
-                                <% } else { %>
-                                    <% actividades.forEach(act => { %>
-                                        <tr>
-                                            <td><strong><%= act.Usuario ? act.Usuario.nombre : 'Usuario desconocido' %></strong><br><small class="text-muted"><%= act.Usuario ? act.Usuario.email : '' %></small></td>
-                                            <td><span class="badge bg-secondary"><%= act.Usuario ? act.Usuario.rol : 'N/A' %></span></td>
-                                            <td><code><%= act.descripcion || act.accion || act.ruta || 'Acceso a recurso' %></code></td>
-                                            <td><%= new Date(act.createdAt).toLocaleString() %></td>
-                                        </tr>
-                                    <% }) %>
-                                <% } %>
-                            </tbody>
+    <% if (!actividades || actividades.length === 0) { %>
+        <tr>
+            <td colspan="4" class="text-center text-muted py-4">Aún no hay actividad de alumnos registrada.</td>
+        </tr>
+    <% } else { %>
+        <% actividades.forEach(act => { %>
+            <tr>
+                <td><strong><%= act.nombre %></strong><br><small class="text-muted"><%= act.email %></small></td>
+                <td><span class="badge bg-secondary"><%= act.rol %></span></td>
+                <td><%= act.descripcion %><br><small class="text-muted"><code><%= act.ruta %></code></small></td>
+                <td><%= new Date(act.fecha).toLocaleString('es-ES') %></td>
+            </tr>
+        <% }) %>
+    <% } %>
+</tbody>
                         </table>
                     </div>
                 </div>

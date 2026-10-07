@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const sequelize = require('../database');
-const { QueryTypes } = require('sequelize');
+const { QueryTypes, Op } = require('sequelize');
 const Usuario = require('../models/Usuario');
 const Curso = require('../models/Curso');
 const Matricula = require('../models/Matricula');
@@ -28,6 +28,33 @@ async function validarCursos(ids, transaction) {
 
 function renderBootstrapError(res, mensaje, status = 400) {
     return res.status(status).render('auth/admin_login', { mensaje });
+}
+
+// Convierte "METHOD /ruta" del registro de actividad en una frase legible
+function describirActividad(recurso, cursos) {
+    const [metodo, ruta] = String(recurso).split(' ');
+    const m = ruta.match(/^\/cursos\/(\d+)(?:\/(.*))?$/);
+    const curso = m && cursos.get(Number(m[1]));
+    const nombreCurso = curso ? `«${curso}»` : `#${m ? m[1] : ''}`;
+    const sub = m ? (m[2] || '') : '';
+
+    if (metodo === 'POST' && ruta === '/auth/login') return 'Inició sesión';
+    if (ruta === '/cursos') return 'Consultó su lista de cursos';
+    if (m && !sub) return `Entró al curso ${nombreCurso}`;
+    if (m && sub === 'contenidos') return `Vio los contenidos de ${nombreCurso}`;
+    if (m && sub === 'tareas') return metodo === 'POST'
+        ? `Entregó una tarea en ${nombreCurso}` : `Vio las tareas de ${nombreCurso}`;
+    if (m && sub === 'tareas/crear') return `Abrió el formulario de entrega en ${nombreCurso}`;
+    if (m && sub === 'foros') return `Vio los foros de ${nombreCurso}`;
+    if (m && /^foros\/\d+$/.test(sub)) return `Abrió un foro de ${nombreCurso}`;
+    if (m && /^foros\/\d+\/mensajes$/.test(sub)) return `Publicó un mensaje en un foro de ${nombreCurso}`;
+    if (m && sub === 'examenes') return `Vio los exámenes de ${nombreCurso}`;
+    if (m && /^examenes\/\d+$/.test(sub)) return `Abrió un examen de ${nombreCurso}`;
+    if (m && /^examenes\/\d+\/resolver$/.test(sub)) return metodo === 'POST'
+        ? `Envió un examen de ${nombreCurso}` : `Empezó a resolver un examen de ${nombreCurso}`;
+    if (ruta === '/paneles/alumno') return 'Abrió su panel';
+    if (ruta === '/usuarios/perfil') return metodo === 'POST' ? 'Actualizó su perfil' : 'Abrió su perfil';
+    return recurso;
 }
 
 module.exports = {
@@ -187,7 +214,37 @@ module.exports = {
                 Usuario.count({ where: { rol: 'administrador' } })
             ]);
 
-            return res.render('paneles/administrador', { usuario, usuarios, cursos, profesores, totalAdministradores });
+            // Registro de actividad de los alumnos (últimos 100 movimientos relevantes)
+            const registros = await RegistroActividad.findAll({
+                where: {
+                    usuario_id: { [Op.ne]: null },
+                    recurso_tipo: { [Op.notIn]: ['favicon.ico', 'public'] },
+                    recurso: { [Op.notIn]: ['GET /auth/login', 'GET /auth/register'] }
+                },
+                include: [{
+                    model: Usuario,
+                    as: 'usuario',
+                    attributes: ['nombre', 'email', 'rol'],
+                    where: { rol: 'alumno' },
+                    required: true
+                }],
+                order: [['hora_entrada', 'DESC']],
+                limit: 100
+            });
+
+            const titulosCursos = new Map(cursos.map(c => [Number(c.id), c.titulo]));
+            const actividades = registros.map(r => ({
+                nombre: r.usuario.nombre,
+                email: r.usuario.email,
+                rol: r.usuario.rol,
+                descripcion: describirActividad(r.recurso, titulosCursos),
+                ruta: r.recurso,
+                fecha: r.hora_entrada
+            }));
+
+            return res.render('paneles/administrador', {
+                usuario, usuarios, cursos, profesores, totalAdministradores, actividades
+            });
         } catch (error) {
             console.error(error);
             return res.status(500).send('Error al cargar la administración de usuarios');
