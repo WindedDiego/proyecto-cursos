@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { borrarRemoto } = require('../storage');
 
 // Solo http/https: evita enlaces tipo "javascript:..." guardados en la base de datos
 const esUrlHttp = (valor) => {
@@ -10,17 +11,22 @@ const esUrlHttp = (valor) => {
     }
 };
 
-// Borra del disco el archivo recién subido (por ejemplo, si la validación falla después)
+// Borra el archivo recién subido (por ejemplo, si la validación falla después):
+// del disco con STORAGE_DRIVER=local, o de Cloudinary con STORAGE_DRIVER=cloudinary.
 const descartarArchivo = (req) => {
-    if (req.file && req.file.path) {
+    if (!req.file) return;
+    if (req.file.path) {
         fs.unlink(req.file.path, () => {});
+    }
+    if (req.file.remoto) {
+        borrarRemoto(req.file.remoto); // sin esperar: no bloquea la respuesta y nunca lanza error
     }
 };
 
 /**
  * Decide qué se guarda en la base de datos (una URL o la ruta de un archivo subido).
  * Formulario esperado: radio "tipo_origen" (url | archivo | ninguno), texto "url", fichero "archivo".
- * Devuelve { valor, error }. Si hay error, el archivo subido ya se ha borrado del disco.
+ * Devuelve { valor, error }. Si hay error, el archivo subido ya se ha borrado (disco o Cloudinary).
  */
 const resolverOrigen = (req, subcarpeta, { obligatorio }) => {
     const fallar = (error) => {
@@ -34,7 +40,9 @@ const resolverOrigen = (req, subcarpeta, { obligatorio }) => {
 
     if (tipo === 'archivo') {
         if (!req.file) return fallar('Selecciona un archivo para subir.');
-        return { valor: `/uploads/${subcarpeta}/${req.file.filename}`, error: null };
+        // Cloudinary: URL https completa. Local: ruta /uploads/<carpeta>/<nombre> (como siempre)
+        const valor = req.file.urlPublica || `/uploads/${subcarpeta}/${req.file.filename}`;
+        return { valor, error: null };
     }
 
     // Si no se eligió archivo, cualquier fichero que llegara se descarta

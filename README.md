@@ -26,10 +26,9 @@ El registro público crea únicamente alumnos. Un administrador autenticado pued
 
 ## Archivos subidos
 
-Los alumnos (entregas), los profesores (contenidos) y los profesores al crear ejercicios (adjunto opcional) pueden indicar una URL o subir un archivo. Los archivos se guardan en disco, en la carpeta `uploads/` de la raíz del proyecto:
+Los alumnos (entregas), los profesores (contenidos) y los profesores al crear ejercicios (adjunto opcional) pueden indicar una URL o subir un archivo. Dónde se guarda el archivo depende de la variable `STORAGE_DRIVER` del `.env`:
 
-- `uploads/entregas/`: entregas de los alumnos (máx. 10 MB)
-- `uploads/contenidos/`: material de estudio de los profesores (máx. 50 MB)
-- `uploads/tareas/`: adjuntos de los ejercicios (máx. 10 MB)
+- `STORAGE_DRIVER=local` (por defecto): en disco, en `uploads/entregas/`, `uploads/contenidos/` y `uploads/tareas/`. En la base de datos se guarda la ruta `/uploads/<carpeta>/<nombre>` y `/uploads` solo es accesible con sesión iniciada. `uploads/` no está en git. **En Railway este disco es efímero: los archivos se pierden en cada despliegue.**
+- `STORAGE_DRIVER=cloudinary`: en Cloudinary (plan gratuito). Hay que definir `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET` (o `CLOUDINARY_URL`). En la base de datos se guarda la URL https completa del archivo. El plan gratuito limita cada archivo a 10 MB, así que los límites por tipo se reducen a ese valor (`CLOUDINARY_MAX_MB`). En cuentas gratuitas hay que activar *Allow delivery of PDF and ZIP files* en Cloudinary (Settings > Security) para poder abrir PDF y archivos comprimidos.
 
-En la base de datos solo se guarda la ruta (`/uploads/<carpeta>/<nombre>`) en `Entregas.url_archivo`, `Contenidos.url_archivo` y `Tareas.url_adjunto`. Los nombres se generan aleatoriamente. `/uploads` solo es accesible con sesión iniciada. `uploads/` no está en git: inclúyela en las copias de seguridad.
+Los nombres se generan aleatoriamente en ambos modos. Los archivos ya guardados en local no se migran solos a Cloudinary.
